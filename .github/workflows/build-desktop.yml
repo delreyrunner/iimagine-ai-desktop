@@ -14,15 +14,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: desktop-companion/package-lock.json
 
       - name: Install dependencies
-        working-directory: desktop-companion
         run: npm ci
 
       - name: Build macOS (arm64 + x64)
-        working-directory: desktop-companion
         run: npx electron-builder --mac --arm64 --x64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -32,8 +28,8 @@ jobs:
         with:
           name: desktop-mac
           path: |
-            desktop-companion/dist/*.dmg
-            desktop-companion/dist/*.zip
+            dist/*.dmg
+            dist/*.zip
 
   build-windows:
     runs-on: windows-latest
@@ -42,15 +38,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: desktop-companion/package-lock.json
 
       - name: Install dependencies
-        working-directory: desktop-companion
         run: npm ci
 
       - name: Build Windows
-        working-directory: desktop-companion
         run: npx electron-builder --win
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -59,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: desktop-windows
-          path: desktop-companion/dist/*.exe
+          path: dist/*.exe
 
   release:
     needs: [build-mac, build-windows]
@@ -73,11 +65,13 @@ jobs:
         with:
           path: artifacts
 
+      - name: List artifacts
+        run: find artifacts -type f
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/desktop-mac/*
-            artifacts/desktop-windows/*
+            artifacts/**/*
           draft: true
           generate_release_notes: true
