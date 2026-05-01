@@ -141,11 +141,8 @@ const KnowledgePage = {
         ${collection.description ? `<p class="text-xs text-neutral-500 -mt-2">${this._esc(collection.description)}</p>` : ''}
 
         <div class="flex gap-2">
-          <button id="kbPasteBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">
-            + Paste Text
-          </button>
-          <button id="kbUploadBtn" class="px-4 py-2.5 rounded-lg bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-white/90 dark:hover:bg-neutral-700/90 transition-all shadow-sm flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Upload File
+          <button id="kbAddDataBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">
+            + Add Data
           </button>
           <button id="kbEmbedBtn" class="px-4 py-2.5 rounded-lg bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-white/90 dark:hover:bg-neutral-700/90 transition-all shadow-sm flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg> Embed All
@@ -164,33 +161,23 @@ const KnowledgePage = {
           <p id="kbEmbedMsg" class="text-xs text-neutral-500"></p>
         </div>
 
-        <!-- Paste form (hidden) -->
-        <div id="kbPasteForm" class="hidden bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md space-y-3">
-          <input id="kbPasteTitle" type="text" placeholder="Document title (e.g. Company Overview)"
+        <!-- Unified Add Data form (hidden) -->
+        <div id="kbAddDataForm" class="hidden bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md space-y-3">
+          <input id="kbAddTitle" type="text" placeholder="Document title (required)"
             class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
-          <input id="kbPasteDesc" type="text" placeholder="Description (optional — helps you find it later)"
+          <input id="kbAddDesc" type="text" placeholder="Description (optional — helps you find it later)"
             class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
-          <textarea id="kbPasteContent" rows="8" placeholder="Paste your text here..."
+          <textarea id="kbAddContent" rows="8" placeholder="Paste your text here..."
             class="w-full resize-none bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm"></textarea>
-          <div class="flex gap-2">
-            <button id="kbSavePasteBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">Save</button>
-            <button id="kbCancelPasteBtn" class="text-sm text-neutral-500 dark:text-neutral-400 px-4 py-2 hover:text-neutral-700 dark:hover:text-neutral-300">Cancel</button>
+          <div class="flex items-center gap-2">
+            <button id="kbAddFileBtn" class="px-3 py-2 rounded-lg bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-white/90 dark:hover:bg-neutral-700/90 transition-all shadow-sm flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> or upload a file
+            </button>
+            <span id="kbAddFilename" class="text-xs text-neutral-400 dark:text-neutral-500 truncate"></span>
           </div>
-        </div>
-
-        <!-- Upload form (hidden, shown after file selection) -->
-        <div id="kbUploadForm" class="hidden bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md space-y-3">
-          <div class="flex items-center gap-2 mb-1">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-neutral-400"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-            <span id="kbUploadFilename" class="text-xs text-neutral-500 dark:text-neutral-400 truncate"></span>
-          </div>
-          <input id="kbUploadTitle" type="text" placeholder="Document title"
-            class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
-          <input id="kbUploadDesc" type="text" placeholder="Description (optional)"
-            class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
           <div class="flex gap-2">
-            <button id="kbSaveUploadBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">Save</button>
-            <button id="kbCancelUploadBtn" class="text-sm text-neutral-500 dark:text-neutral-400 px-4 py-2 hover:text-neutral-700 dark:hover:text-neutral-300">Cancel</button>
+            <button id="kbSaveAddBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">Save</button>
+            <button id="kbCancelAddBtn" class="text-sm text-neutral-500 dark:text-neutral-400 px-4 py-2 hover:text-neutral-700 dark:hover:text-neutral-300">Cancel</button>
           </div>
         </div>
 
@@ -245,72 +232,74 @@ const KnowledgePage = {
       }
     });
 
-    // Paste
-    document.querySelector('#kbPasteBtn')?.addEventListener('click', () => {
-      document.querySelector('#kbPasteForm').classList.toggle('hidden');
-      document.querySelector('#kbPasteTitle')?.focus();
-    });
-    document.querySelector('#kbCancelPasteBtn')?.addEventListener('click', () => {
-      document.querySelector('#kbPasteForm').classList.add('hidden');
-    });
-    document.querySelector('#kbSavePasteBtn')?.addEventListener('click', async () => {
-      const title = document.querySelector('#kbPasteTitle').value.trim();
-      const content = document.querySelector('#kbPasteContent').value.trim();
-      if (!title || !content) return;
-      const id = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-      await window.api.kb.addDocument({ id, collectionId, title, sourceType: 'paste', content });
-      this._showDocuments(collectionId);
+    // Unified Add Data form
+    let uploadedSourceType = null; // tracks if content came from a file upload
+    let uploadedFilename = null;
+
+    document.querySelector('#kbAddDataBtn')?.addEventListener('click', () => {
+      const form = document.querySelector('#kbAddDataForm');
+      form.classList.toggle('hidden');
+      if (!form.classList.contains('hidden')) {
+        document.querySelector('#kbAddTitle')?.focus();
+      }
     });
 
-    // Upload — show form after file selection
-    let pendingUploadFiles = [];
-    document.querySelector('#kbUploadBtn')?.addEventListener('click', async () => {
+    document.querySelector('#kbCancelAddBtn')?.addEventListener('click', () => {
+      document.querySelector('#kbAddDataForm').classList.add('hidden');
+      uploadedSourceType = null;
+      uploadedFilename = null;
+      document.querySelector('#kbAddFilename').textContent = '';
+    });
+
+    // "or upload a file" button — opens file picker, fills textarea
+    document.querySelector('#kbAddFileBtn')?.addEventListener('click', async () => {
       const result = await window.api.kb.openFileDialog();
       if (result.canceled || !result.files.length) return;
 
-      pendingUploadFiles = result.files;
-      const names = result.files.map(f => f.filename).join(', ');
-      document.querySelector('#kbUploadFilename').textContent = names;
-      const defaultTitle = result.files[0].filename.replace(/\.[^.]+$/, '');
-      document.querySelector('#kbUploadTitle').value = defaultTitle;
-      document.querySelector('#kbUploadDesc').value = '';
-      document.querySelector('#kbUploadForm').classList.remove('hidden');
-      document.querySelector('#kbUploadTitle').focus();
-    });
-
-    document.querySelector('#kbCancelUploadBtn')?.addEventListener('click', () => {
-      document.querySelector('#kbUploadForm').classList.add('hidden');
-      pendingUploadFiles = [];
-    });
-
-    document.querySelector('#kbSaveUploadBtn')?.addEventListener('click', async () => {
-      const title = document.querySelector('#kbUploadTitle').value.trim();
-      if (!title || !pendingUploadFiles.length) return;
-      const desc = document.querySelector('#kbUploadDesc').value.trim();
-
-      for (const file of pendingUploadFiles) {
-        let content = '';
-        if (file.content) {
-          content = file.content;
-        } else if (file.base64 && file.type === 'pdf') {
-          content = await this._parsePdfBase64(file.base64);
-        } else if (file.base64 && file.type === 'docx') {
-          content = await this._parseDocxBase64(file.base64);
-        }
-        if (!content.trim()) {
-          alert(`Could not extract text from ${file.filename}`);
-          continue;
-        }
-        const id = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-        const docTitle = pendingUploadFiles.length === 1 ? title : `${title} — ${file.filename}`;
-        await window.api.kb.addDocument({
-          id, collectionId, title: docTitle, sourceType: file.type,
-          originalFilename: file.filename, content,
-          description: desc || undefined,
-        });
+      const file = result.files[0];
+      let content = '';
+      if (file.content) {
+        content = file.content;
+      } else if (file.base64 && file.type === 'pdf') {
+        content = await this._parsePdfBase64(file.base64);
+      } else if (file.base64 && file.type === 'docx') {
+        content = await this._parseDocxBase64(file.base64);
       }
-      pendingUploadFiles = [];
-      document.querySelector('#kbUploadForm').classList.add('hidden');
+
+      if (!content.trim()) {
+        alert(`Could not extract text from ${file.filename}`);
+        return;
+      }
+
+      document.querySelector('#kbAddContent').value = content;
+      document.querySelector('#kbAddFilename').textContent = file.filename;
+      uploadedSourceType = file.type;
+      uploadedFilename = file.filename;
+
+      // Set title from filename if title is empty
+      const titleInput = document.querySelector('#kbAddTitle');
+      if (!titleInput.value.trim()) {
+        titleInput.value = file.filename.replace(/\.[^.]+$/, '');
+      }
+    });
+
+    // Save
+    document.querySelector('#kbSaveAddBtn')?.addEventListener('click', async () => {
+      const title = document.querySelector('#kbAddTitle').value.trim();
+      const content = document.querySelector('#kbAddContent').value.trim();
+      if (!title || !content) return;
+      const desc = document.querySelector('#kbAddDesc').value.trim();
+      const id = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const sourceType = uploadedSourceType || 'paste';
+
+      await window.api.kb.addDocument({
+        id, collectionId, title, sourceType, content,
+        originalFilename: uploadedFilename || undefined,
+        description: desc || undefined,
+      });
+
+      uploadedSourceType = null;
+      uploadedFilename = null;
       this._showDocuments(collectionId);
     });
 
