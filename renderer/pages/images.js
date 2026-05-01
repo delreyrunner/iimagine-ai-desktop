@@ -15,25 +15,25 @@ const ImagesPage = {
     container.innerHTML = `
       <div id="imagesPage" class="flex flex-col flex-1 min-h-0">
         <div class="flex-1 overflow-y-auto p-6 space-y-4">
-          <h2 class="text-lg font-semibold tracking-tight text-neutral-900">Generate Images</h2>
+          <h2 class="text-lg font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">Generate Images</h2>
 
           <div class="space-y-3">
             <div>
               <label class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1.5 block">Prompt</label>
               <textarea id="imagePrompt" rows="3" placeholder="Describe the image you want to create..."
-                class="w-full resize-none bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 placeholder-neutral-400 focus:bg-white/90 focus:outline-none transition-all shadow-sm"></textarea>
+                class="w-full resize-none bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm"></textarea>
             </div>
 
             <div class="flex gap-3">
               <div class="flex-1">
                 <label class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1.5 block">Model</label>
-                <select id="imageModel" class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 focus:bg-white/90 focus:outline-none transition-all shadow-sm">
+                <select id="imageModel" class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm">
                   ${IMAGE_MODELS.map(m => `<option value="${m.id}">${m.name} — ${m.desc}</option>`).join('')}
                 </select>
               </div>
               <div class="w-32">
                 <label class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1.5 block">Aspect</label>
-                <select id="imageAspect" class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 focus:bg-white/90 focus:outline-none transition-all shadow-sm">
+                <select id="imageAspect" class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm">
                   <option value="">Default</option>
                   <option value="1:1">1:1</option>
                   <option value="16:9">16:9</option>
@@ -43,7 +43,7 @@ const ImagesPage = {
               </div>
             </div>
 
-            <button id="generateBtn" class="w-full px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <button id="generateBtn" class="w-full px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 4-1 1M4 15l1-1"/><path d="m2 2 20 20"/><path d="m9 5 .5-.5M5 9l-.5.5M14 14l.5-.5"/></svg> Generate Image
             </button>
           </div>
@@ -55,10 +55,10 @@ const ImagesPage = {
               <p class="text-sm text-neutral-500 mt-2">Generating image...</p>
             </div>
             <div id="imageOutput" class="hidden">
-              <img id="generatedImage" class="w-full rounded-2xl border border-neutral-200/40 shadow-sm" />
+              <img id="generatedImage" class="w-full rounded-2xl border border-neutral-200/40 dark:border-neutral-700/40 shadow-sm" />
               <div class="flex items-center justify-between mt-3">
                 <span id="imageModelUsed" class="text-xs text-neutral-400"></span>
-                <button id="saveImageBtn" class="px-4 py-2 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm flex items-center gap-1.5">
+                <button id="saveImageBtn" class="px-4 py-2 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm flex items-center gap-1.5">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Save
                 </button>
               </div>
@@ -132,11 +132,11 @@ const ImagesPage = {
 
           // Add to history
           const histItem = document.createElement('div');
-          histItem.className = 'flex gap-3 p-3 rounded-2xl bg-white/50 border border-neutral-200/40 backdrop-blur-md hover:bg-white/80 transition-all';
+          histItem.className = 'flex gap-3 p-3 rounded-2xl bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 backdrop-blur-md hover:bg-white/80 dark:hover:bg-neutral-700/80 transition-all';
           histItem.innerHTML = `
             <img src="${src}" class="w-16 h-16 rounded object-cover flex-shrink-0" />
             <div class="min-w-0">
-              <p class="text-xs text-neutral-700 truncate">${text}</p>
+              <p class="text-xs text-neutral-700 dark:text-neutral-300 truncate">${text}</p>
               <p class="text-[10px] text-neutral-400">${model.value}</p>
             </div>
           `;

@@ -6,21 +6,21 @@ const SettingsPage = {
   render(container) {
     container.innerHTML = `
       <div id="settingsPage" class="flex-1 overflow-y-auto p-6 space-y-8">
-        <h2 class="text-lg font-semibold tracking-tight text-neutral-900">Settings</h2>
+        <h2 class="text-lg font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">Settings</h2>
 
         <!-- Account -->
         <section>
-          <h3 class="text-sm font-medium text-neutral-900 mb-2">Account</h3>
-          <p id="settingsUserEmail" class="text-sm text-neutral-500"></p>
+          <h3 class="text-sm font-medium text-neutral-900 dark:text-neutral-100 mb-2">Account</h3>
+          <p id="settingsUserEmail" class="text-sm text-neutral-500 dark:text-neutral-400"></p>
         </section>
 
         <!-- Your Data -->
-        <section class="bg-white/50 border border-neutral-200/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md">
+        <section class="bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md">
           <div class="flex items-center gap-2 mb-3">
-            <div class="p-2 bg-white rounded-xl border border-neutral-100 shadow-sm text-neutral-700"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+            <div class="p-2 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-800 shadow-sm text-neutral-700 dark:text-neutral-300"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
             <div>
-              <h3 class="text-sm font-semibold text-neutral-900">Your Data</h3>
-              <p class="text-xs text-neutral-500">Stored locally on this computer — you own it</p>
+              <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Your Data</h3>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400">Stored locally on this computer — you own it</p>
             </div>
           </div>
           <div id="dataStats" class="space-y-1 text-sm text-neutral-600">
@@ -29,25 +29,25 @@ const SettingsPage = {
         </section>
 
         <!-- Local AI -->
-        <section class="bg-white/50 border border-neutral-200/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md">
+        <section class="bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md">
           <div class="flex items-center gap-2 mb-3">
-            <div class="p-2 bg-white rounded-xl border border-neutral-100 shadow-sm text-emerald-600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/><path d="m13 8-4 8h6l-4-8z"/></svg></div>
+            <div class="p-2 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-800 shadow-sm text-emerald-600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/><path d="m13 8-4 8h6l-4-8z"/></svg></div>
             <div>
-              <h3 class="text-sm font-semibold text-neutral-900">Local AI</h3>
-              <p class="text-xs text-neutral-500">Nothing leaves your machine</p>
+              <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Local AI</h3>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400">Nothing leaves your machine</p>
             </div>
           </div>
 
           <!-- Model Recommendation Wizard -->
           <div id="wizardSection" class="mb-4">
-            <button id="wizardToggle" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-white/50 border border-neutral-200/40 hover:bg-white/70 transition-all text-left group">
+            <button id="wizardToggle" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 hover:bg-white/70 dark:hover:bg-neutral-700/70 transition-all text-left group">
               <div class="flex items-center gap-2.5">
-                <div class="p-1.5 bg-white rounded-lg border border-neutral-100 shadow-sm text-neutral-600">
+                <div class="p-1.5 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-800 shadow-sm text-neutral-600 dark:text-neutral-400">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
                 </div>
                 <div>
-                  <span class="text-sm font-medium text-neutral-900">Find the right model for you</span>
-                  <p class="text-[11px] text-neutral-500">Tell us about your computer and we'll recommend the best model</p>
+                  <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Find the right model for you</span>
+                  <p class="text-[11px] text-neutral-500 dark:text-neutral-400">Tell us about your computer and we'll recommend the best model</p>
                 </div>
               </div>
               <svg id="wizardChevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-neutral-400 transition-transform"><polyline points="6 9 12 15 18 9"/></svg>
@@ -57,7 +57,7 @@ const SettingsPage = {
               <!-- Step 1: RAM -->
               <div>
                 <label class="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5 block">How much RAM does your computer have?</label>
-                <select id="wizardRAM" class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 focus:bg-white/90 focus:outline-none transition-all shadow-sm">
+                <select id="wizardRAM" class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm">
                   <option value="">Select...</option>
                 </select>
                 <p class="text-[10px] text-neutral-400 mt-1">Mac: Apple menu → About This Mac. Windows: Settings → System → About.</p>
@@ -66,7 +66,7 @@ const SettingsPage = {
               <!-- Step 2: GPU -->
               <div>
                 <label class="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1.5 block">What GPU do you have?</label>
-                <select id="wizardGPU" class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 focus:bg-white/90 focus:outline-none transition-all shadow-sm">
+                <select id="wizardGPU" class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm">
                   <option value="">Select...</option>
                 </select>
               </div>
@@ -78,7 +78,7 @@ const SettingsPage = {
               </div>
 
               <!-- Get Recommendation button -->
-              <button id="wizardRecommendBtn" class="w-full px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+              <button id="wizardRecommendBtn" class="w-full px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed" disabled>
                 Get Recommendation
               </button>
 
@@ -90,14 +90,14 @@ const SettingsPage = {
           <!-- Engine status -->
           <div id="engineStatus" class="mb-4">
             <div class="flex items-center justify-between text-sm">
-              <span class="text-neutral-600">AI Engine</span>
-              <span id="engineStatusBadge" class="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-500 border border-neutral-200">Checking...</span>
+              <span class="text-neutral-600 dark:text-neutral-400">AI Engine</span>
+              <span id="engineStatusBadge" class="text-xs px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200">Checking...</span>
             </div>
           </div>
 
           <!-- Install engine button (shown when Ollama not found) -->
           <div id="installSection" class="hidden mb-4">
-            <button id="installEngineBtn" class="w-full px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm">
+            <button id="installEngineBtn" class="w-full px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">
               Install AI Engine
             </button>
             <p id="installProgress" class="text-xs text-neutral-500 mt-2 hidden"></p>
@@ -106,24 +106,24 @@ const SettingsPage = {
           <!-- Model management (shown when engine is running) -->
           <div id="modelSection" class="hidden">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-sm text-neutral-600">Models</span>
-              <button id="pullModelBtn" class="px-4 py-2 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm flex items-center gap-2">
+              <span class="text-sm text-neutral-600 dark:text-neutral-400">Models</span>
+              <button id="pullModelBtn" class="px-4 py-2 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm flex items-center gap-2">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg> Install model
               </button>
             </div>
 
             <!-- Model pull UI -->
-            <div id="pullUI" class="hidden mb-3 bg-white/50 border border-neutral-200/40 rounded-2xl p-4 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md">
+            <div id="pullUI" class="hidden mb-3 bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-4 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md">
               <label class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1.5 block">Model name</label>
               <div class="flex gap-2 mb-2">
                 <input id="pullModelInput" type="text" value="gemma3:4b"
-                  class="flex-1 bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-1.5 text-sm text-neutral-700 focus:bg-white/90 focus:outline-none transition-all shadow-sm" />
-                <button id="startPullBtn" class="px-4 py-2 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm">Pull</button>
+                  class="flex-1 bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-1.5 text-sm text-neutral-700 dark:text-neutral-300 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
+                <button id="startPullBtn" class="px-4 py-2 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">Pull</button>
                 <button id="cancelPullBtn" class="text-sm text-neutral-400 hover:text-neutral-600 px-2">✕</button>
               </div>
               <p class="text-[10px] text-neutral-400 mb-2">Recommended: gemma3:4b (~3GB), gemma3:1b (~1GB)</p>
               <div id="pullProgress" class="hidden">
-                <div class="w-full bg-neutral-100 rounded-full h-2 shadow-inner mb-1">
+                <div class="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-2 shadow-inner mb-1">
                   <div id="pullProgressBar" class="progress-bar bg-gradient-to-r from-neutral-600 to-neutral-900 h-2 rounded-full" style="width: 0%"></div>
                 </div>
                 <p id="pullProgressText" class="text-xs text-neutral-500"></p>
@@ -136,29 +136,29 @@ const SettingsPage = {
         </section>
 
         <!-- Vertex AI (Regional Cloud) -->
-        <section class="bg-white/50 border border-neutral-200/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md">
+        <section class="bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md">
           <div class="flex items-center gap-2 mb-3">
-            <div class="p-2 bg-white rounded-xl border border-neutral-100 shadow-sm text-blue-600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></div>
+            <div class="p-2 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-800 shadow-sm text-blue-600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></div>
             <div>
-              <h3 class="text-sm font-semibold text-neutral-900">Regional Cloud</h3>
-              <p class="text-xs text-neutral-500">Data stays in your chosen region via Google Cloud</p>
+              <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Regional Cloud</h3>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400">Data stays in your chosen region via Google Cloud</p>
             </div>
           </div>
 
           <div class="space-y-3">
             <div>
               <label class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1.5 block">Region</label>
-              <select id="vertexRegion" class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 focus:bg-white/90 focus:outline-none transition-all shadow-sm">
+              <select id="vertexRegion" class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm">
                 <option value="">Select a region...</option>
               </select>
             </div>
             <div>
               <label class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1.5 block">Model</label>
-              <select id="vertexModel" class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 focus:bg-white/90 focus:outline-none transition-all shadow-sm">
+              <select id="vertexModel" class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm">
                 <option value="">Select a model...</option>
               </select>
             </div>
-            <button id="activateVertexBtn" class="w-full px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none" disabled>
+            <button id="activateVertexBtn" class="w-full px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none" disabled>
               Activate Regional Cloud
             </button>
             <div id="vertexStatus" class="hidden text-xs text-emerald-600 text-center"></div>
@@ -166,23 +166,23 @@ const SettingsPage = {
         </section>
 
         <!-- Cloud Models (AI Gateway) -->
-        <section class="bg-white/50 border border-neutral-200/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md">
+        <section class="bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md">
           <div class="flex items-center gap-2 mb-3">
-            <div class="p-2 bg-white rounded-xl border border-neutral-100 shadow-sm text-violet-600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6 6h.01M6 18h.01"/></svg></div>
+            <div class="p-2 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-800 shadow-sm text-violet-600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6 6h.01M6 18h.01"/></svg></div>
             <div>
-              <h3 class="text-sm font-semibold text-neutral-900">Cloud Models</h3>
-              <p class="text-xs text-neutral-500">Access GPT, Claude, Gemini, Grok — no data privacy guarantee</p>
+              <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Cloud Models</h3>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400">Access GPT, Claude, Gemini, Grok — no data privacy guarantee</p>
             </div>
           </div>
 
           <div class="space-y-3">
             <div>
               <label class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-1.5 block">Model</label>
-              <select id="gatewayModel" class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 focus:bg-white/90 focus:outline-none transition-all shadow-sm">
+              <select id="gatewayModel" class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm">
                 <option value="">Select a model...</option>
               </select>
             </div>
-            <button id="activateGatewayBtn" class="w-full px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none" disabled>
+            <button id="activateGatewayBtn" class="w-full px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none" disabled>
               Activate Cloud Model
             </button>
             <div id="gatewayStatus" class="hidden text-xs text-violet-600 text-center"></div>
@@ -191,16 +191,16 @@ const SettingsPage = {
         </section>
 
         <!-- Plugins -->
-        <section class="bg-white/50 border border-neutral-200/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md">
+        <section class="bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
-              <div class="p-2 bg-white rounded-xl border border-neutral-100 shadow-sm text-neutral-700"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9 8v3M15 8v3M8 11h8v2a4 4 0 0 1-8 0v-2z"/></svg></div>
+              <div class="p-2 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-800 shadow-sm text-neutral-700 dark:text-neutral-300"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9 8v3M15 8v3M8 11h8v2a4 4 0 0 1-8 0v-2z"/></svg></div>
               <div>
-                <h3 class="text-sm font-semibold text-neutral-900">Plugins</h3>
-                <p class="text-xs text-neutral-500">Extend functionality with add-ons</p>
+                <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Plugins</h3>
+                <p class="text-xs text-neutral-500 dark:text-neutral-400">Extend functionality with add-ons</p>
               </div>
             </div>
-            <button id="installPluginBtn" class="px-4 py-2 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg> Install</button>
+            <button id="installPluginBtn" class="px-4 py-2 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg> Install</button>
           </div>
           <div id="pluginsList" class="space-y-2">
             <p class="text-xs text-neutral-400">Loading...</p>
@@ -244,28 +244,28 @@ const SettingsPage = {
       const stats = await window.api.storage.getStats();
       dataStats.innerHTML = `
         <div class="flex items-center justify-between py-1">
-          <span class="text-neutral-500">Location</span>
-          <span class="text-xs font-mono text-neutral-700 truncate max-w-[200px]" title="${stats.dbPath}">${stats.dbPath}</span>
+          <span class="text-neutral-500 dark:text-neutral-400">Location</span>
+          <span class="text-xs font-mono text-neutral-700 dark:text-neutral-300 truncate max-w-[200px]" title="${stats.dbPath}">${stats.dbPath}</span>
         </div>
         <div class="flex items-center justify-between py-1">
-          <span class="text-neutral-500">Size</span>
-          <span class="text-neutral-700">${stats.fileSizeMB} MB</span>
+          <span class="text-neutral-500 dark:text-neutral-400">Size</span>
+          <span class="text-neutral-700 dark:text-neutral-300">${stats.fileSizeMB} MB</span>
         </div>
         <div class="flex items-center justify-between py-1">
-          <span class="text-neutral-500">Conversations</span>
-          <span class="text-neutral-700">${stats.conversations}</span>
+          <span class="text-neutral-500 dark:text-neutral-400">Conversations</span>
+          <span class="text-neutral-700 dark:text-neutral-300">${stats.conversations}</span>
         </div>
         <div class="flex items-center justify-between py-1">
-          <span class="text-neutral-500">Messages</span>
-          <span class="text-neutral-700">${stats.messages}</span>
+          <span class="text-neutral-500 dark:text-neutral-400">Messages</span>
+          <span class="text-neutral-700 dark:text-neutral-300">${stats.messages}</span>
         </div>
         <div class="flex items-center justify-between py-1">
-          <span class="text-neutral-500">Knowledge entities</span>
-          <span class="text-neutral-700">${stats.entities}</span>
+          <span class="text-neutral-500 dark:text-neutral-400">Knowledge entities</span>
+          <span class="text-neutral-700 dark:text-neutral-300">${stats.entities}</span>
         </div>
         <div class="flex items-center justify-between py-1">
-          <span class="text-neutral-500">Media files</span>
-          <span class="text-neutral-700">${stats.media || 0}</span>
+          <span class="text-neutral-500 dark:text-neutral-400">Media files</span>
+          <span class="text-neutral-700 dark:text-neutral-300">${stats.media || 0}</span>
         </div>
       `;
 
@@ -273,20 +273,20 @@ const SettingsPage = {
       try {
         const kbStats = await window.api.kb.getStats();
         dataStats.innerHTML += `
-          <div class="flex items-center justify-between py-1 border-t border-neutral-200/40 mt-1 pt-1">
-            <span class="text-neutral-500">KB collections</span>
-            <span class="text-neutral-700">${kbStats.collections}</span>
+          <div class="flex items-center justify-between py-1 border-t border-neutral-200/40 dark:border-neutral-700/40 mt-1 pt-1">
+            <span class="text-neutral-500 dark:text-neutral-400">KB collections</span>
+            <span class="text-neutral-700 dark:text-neutral-300">${kbStats.collections}</span>
           </div>
           <div class="flex items-center justify-between py-1">
-            <span class="text-neutral-500">KB documents</span>
-            <span class="text-neutral-700">${kbStats.documents}</span>
+            <span class="text-neutral-500 dark:text-neutral-400">KB documents</span>
+            <span class="text-neutral-700 dark:text-neutral-300">${kbStats.documents}</span>
           </div>
           <div class="flex items-center justify-between py-1">
-            <span class="text-neutral-500">KB chunks</span>
-            <span class="text-neutral-700">${kbStats.chunks}</span>
+            <span class="text-neutral-500 dark:text-neutral-400">KB chunks</span>
+            <span class="text-neutral-700 dark:text-neutral-300">${kbStats.chunks}</span>
           </div>
           <div class="flex items-center justify-between py-1">
-            <span class="text-neutral-500">Vector search</span>
+            <span class="text-neutral-500 dark:text-neutral-400">Vector search</span>
             <span class="${kbStats.vecLoaded ? 'text-emerald-600' : 'text-amber-500'}">${kbStats.vecLoaded ? 'Active' : 'Unavailable'}</span>
           </div>
         `;
@@ -742,10 +742,10 @@ const SettingsPage = {
         pluginsList.innerHTML = '<p class="text-xs text-neutral-400 italic">No plugins installed. Drop a plugin folder into the plugins directory or click Install.</p>';
       } else {
         pluginsList.innerHTML = plugins.map(p => `
-          <div class="flex items-center justify-between py-2 px-2 rounded-2xl ${p.enabled ? 'bg-white/50 border border-neutral-200/40 backdrop-blur-md' : ''}">
+          <div class="flex items-center justify-between py-2 px-2 rounded-2xl ${p.enabled ? 'bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 backdrop-blur-md' : ''}">
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-neutral-900">${p.name}</span>
+                <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">${p.name}</span>
                 <span class="text-[10px] text-neutral-400">v${p.version}</span>
               </div>
               <p class="text-xs text-neutral-500">${p.description || ''}</p>
@@ -799,10 +799,10 @@ const SettingsPage = {
       const sizeGB = (m.size / 1e9).toFixed(1);
       const isActive = window.ProviderManager.activeProvider?.name === m.name;
       return `
-        <div class="flex items-center justify-between py-1.5 px-2 rounded-2xl ${isActive ? 'bg-white/50 border border-neutral-200/40 backdrop-blur-md' : ''}">
+        <div class="flex items-center justify-between py-1.5 px-2 rounded-2xl ${isActive ? 'bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 backdrop-blur-md' : ''}">
           <div class="flex items-center gap-2">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>
-            <span class="text-sm text-neutral-900">${m.name}</span>
+            <span class="text-sm text-neutral-900 dark:text-neutral-100">${m.name}</span>
             <span class="text-xs text-neutral-400">${sizeGB}GB</span>
           </div>
           ${isActive ? '<span class="text-xs text-emerald-600 font-medium">Active</span>' : ''}

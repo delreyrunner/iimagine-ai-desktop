@@ -15,9 +15,9 @@ const ChatPage = {
     container.innerHTML = `
       <div id="chatPage" class="flex flex-1 min-h-0">
         <!-- Conversation list -->
-        <div id="convSidebar" class="w-48 border-r border-neutral-200/40 flex flex-col flex-shrink-0 bg-white/20">
-          <div class="p-2 border-b border-neutral-200/40">
-            <button id="newConvBtn" class="w-full px-4 py-2 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm flex items-center justify-center gap-2">
+        <div id="convSidebar" class="w-48 border-r border-neutral-200/40 dark:border-neutral-700/40 flex flex-col flex-shrink-0 bg-white/20 dark:bg-neutral-800/20">
+          <div class="p-2 border-b border-neutral-200/40 dark:border-neutral-700/40">
+            <button id="newConvBtn" class="w-full px-4 py-2 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm flex items-center justify-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg> New chat
             </button>
           </div>
@@ -28,20 +28,20 @@ const ChatPage = {
         <div class="flex flex-col flex-1 min-h-0 min-w-0" style="background: rgba(255,255,255,0.25);">
           <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
             <div id="welcomeMessage" class="text-center py-8">
-              <div class="p-3 bg-white rounded-2xl border border-neutral-100 shadow-sm text-neutral-400 inline-flex mb-3"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.5V3a1 1 0 0 0-1-1h-4l-4 4-4-4H1a1 1 0 0 0-1 1v5.5"/><path d="m2 14 4-4 3 3 4-4 3 3 4-4"/><path d="M2 14v5a1 1 0 0 0 1 1h4"/><path d="M22 14v5a1 1 0 0 1-1 1h-4"/></svg></div>
-              <p class="text-neutral-900 font-semibold mb-1 tracking-tight">Welcome back</p>
+              <div class="p-3 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-800 shadow-sm text-neutral-400 inline-flex mb-3"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.5V3a1 1 0 0 0-1-1h-4l-4 4-4-4H1a1 1 0 0 0-1 1v5.5"/><path d="m2 14 4-4 3 3 4-4 3 3 4-4"/><path d="M2 14v5a1 1 0 0 0 1 1h4"/><path d="M22 14v5a1 1 0 0 1-1 1h-4"/></svg></div>
+              <p class="text-neutral-900 dark:text-neutral-100 font-semibold mb-1 tracking-tight">Welcome back</p>
               <p id="chatUserName" class="text-neutral-400 text-sm mb-4"></p>
-              <div id="noProviderMsg" class="hidden bg-white/50 border border-neutral-200/40 rounded-2xl p-4 text-sm text-neutral-600 max-w-xs mx-auto backdrop-blur-md">
+              <div id="noProviderMsg" class="hidden bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-4 text-sm text-neutral-600 dark:text-neutral-400 max-w-xs mx-auto backdrop-blur-md">
                 <p class="font-medium mb-1">No AI model configured</p>
-                <p class="text-xs">Go to <button id="goToSettings" class="underline text-neutral-900 font-medium">Settings</button> to set up a local model.</p>
+                <p class="text-xs">Go to <button id="goToSettings" class="underline text-neutral-900 dark:text-neutral-100 font-medium">Settings</button> to set up a local model.</p>
               </div>
             </div>
           </div>
-          <div class="border-t border-neutral-200/40 p-3 flex-shrink-0 bg-white/30">
+          <div class="border-t border-neutral-200/40 dark:border-neutral-700/40 p-3 flex-shrink-0 bg-white/30 dark:bg-neutral-800/30">
             <div class="flex gap-2">
               <textarea id="chatInput" placeholder="Message your local AI..." rows="3"
-                class="flex-1 resize-none bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 placeholder-neutral-400 focus:bg-white/90 focus:outline-none transition-all shadow-sm"></textarea>
-              <button id="sendBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed self-end" disabled>
+                class="flex-1 resize-none bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm"></textarea>
+              <button id="sendBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed self-end" disabled>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
               </button>
             </div>
@@ -178,10 +178,11 @@ const ChatPage = {
     for (const conv of this.conversations) {
       const btn = document.createElement('button');
       btn.className = `conv-item w-full text-left px-2 py-1.5 rounded-lg text-xs truncate transition-all ${
-        conv.id === this.activeConversationId ? 'font-medium text-neutral-900' : 'text-neutral-500 hover:text-neutral-700'
+        conv.id === this.activeConversationId ? 'font-medium text-neutral-900 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
       }`;
       if (conv.id === this.activeConversationId) {
-        btn.style.background = 'rgba(255,255,255,0.75)';
+        const isDark = document.documentElement.classList.contains('dark');
+        btn.style.background = isDark ? 'rgba(38,38,38,0.75)' : 'rgba(255,255,255,0.75)';
       } else {
         btn.style.background = 'transparent';
       }
@@ -199,9 +200,10 @@ const ChatPage = {
     convList.querySelectorAll('.conv-item').forEach(el => {
       const isActive = el.dataset.convId === this.activeConversationId;
       el.className = `conv-item w-full text-left px-2 py-1.5 rounded-lg text-xs truncate transition-all ${
-        isActive ? 'font-medium text-neutral-900' : 'text-neutral-500 hover:text-neutral-700'
+        isActive ? 'font-medium text-neutral-900 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
       }`;
-      el.style.background = isActive ? 'rgba(255,255,255,0.75)' : 'transparent';
+      const isDarkHL = document.documentElement.classList.contains('dark');
+      el.style.background = isActive ? (isDarkHL ? 'rgba(38,38,38,0.75)' : 'rgba(255,255,255,0.75)') : 'transparent';
     });
   },
 
@@ -309,11 +311,12 @@ const ChatPage = {
     div.className = `message-enter flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
     const bubble = document.createElement('div');
     bubble.className = role === 'user'
-      ? 'bg-neutral-900 text-white rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[85%] text-sm'
-      : 'text-neutral-800 rounded-2xl rounded-bl-sm px-4 py-2.5 max-w-[85%] text-sm whitespace-pre-wrap';
+      ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[85%] text-sm'
+      : 'text-neutral-800 dark:text-neutral-200 rounded-2xl rounded-bl-sm px-4 py-2.5 max-w-[85%] text-sm whitespace-pre-wrap';
     if (role === 'assistant') {
-      bubble.style.background = 'rgba(255,255,255,0.75)';
-      bubble.style.border = '1px solid rgba(255,255,255,0.9)';
+      const isDark = document.documentElement.classList.contains('dark');
+      bubble.style.background = isDark ? 'rgba(38,38,38,0.85)' : 'rgba(255,255,255,0.75)';
+      bubble.style.border = isDark ? '1px solid rgba(55,55,55,0.9)' : '1px solid rgba(255,255,255,0.9)';
     }
     bubble.textContent = content;
     div.appendChild(bubble);
@@ -325,9 +328,10 @@ const ChatPage = {
     const div = document.createElement('div');
     div.className = 'message-enter flex justify-start';
     const bubble = document.createElement('div');
-    bubble.className = 'text-neutral-800 rounded-2xl rounded-bl-sm px-4 py-2.5 max-w-[85%] text-sm whitespace-pre-wrap';
-    bubble.style.background = 'rgba(255,255,255,0.75)';
-    bubble.style.border = '1px solid rgba(255,255,255,0.9)';
+    bubble.className = 'text-neutral-800 dark:text-neutral-200 rounded-2xl rounded-bl-sm px-4 py-2.5 max-w-[85%] text-sm whitespace-pre-wrap';
+    const isDark = document.documentElement.classList.contains('dark');
+    bubble.style.background = isDark ? 'rgba(38,38,38,0.85)' : 'rgba(255,255,255,0.75)';
+    bubble.style.border = isDark ? '1px solid rgba(55,55,55,0.9)' : '1px solid rgba(255,255,255,0.9)';
     const content = document.createElement('span');
     content.className = 'msg-content';
     bubble.appendChild(content);
@@ -340,8 +344,11 @@ const ChatPage = {
   _appendTyping(container) {
     const div = document.createElement('div');
     div.className = 'message-enter flex justify-start';
+    const isDark = document.documentElement.classList.contains('dark');
+    const bg = isDark ? 'rgba(38,38,38,0.85)' : 'rgba(255,255,255,0.75)';
+    const border = isDark ? '1px solid rgba(55,55,55,0.9)' : '1px solid rgba(255,255,255,0.9)';
     div.innerHTML = `
-      <div class="rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1" style="background: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.9);">
+      <div class="rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1" style="background: ${bg}; border: ${border};">
         <div class="typing-dot w-2 h-2 bg-neutral-400 rounded-full"></div>
         <div class="typing-dot w-2 h-2 bg-neutral-400 rounded-full"></div>
         <div class="typing-dot w-2 h-2 bg-neutral-400 rounded-full"></div>

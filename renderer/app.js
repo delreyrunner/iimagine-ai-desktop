@@ -36,11 +36,11 @@ const AppRouter = {
     document.querySelectorAll('.nav-btn').forEach(btn => {
       const isActive = btn.dataset.page === page;
       if (isActive) {
-        btn.classList.remove('text-neutral-500', 'hover:text-neutral-900', 'hover:bg-white/40');
-        btn.classList.add('bg-white/60', 'text-neutral-900', 'shadow-sm', 'border', 'border-white/50');
+        btn.classList.remove('text-neutral-500', 'dark:text-neutral-400', 'hover:text-neutral-900', 'dark:hover:text-neutral-100', 'hover:bg-white/40', 'dark:hover:bg-neutral-800/40');
+        btn.classList.add('bg-white/60', 'dark:bg-neutral-800/60', 'text-neutral-900', 'dark:text-neutral-100', 'shadow-sm', 'border', 'border-white/50', 'dark:border-neutral-700/50');
       } else {
-        btn.classList.remove('bg-white/60', 'text-neutral-900', 'shadow-sm', 'border', 'border-white/50');
-        btn.classList.add('text-neutral-500', 'hover:text-neutral-900', 'hover:bg-white/40');
+        btn.classList.remove('bg-white/60', 'dark:bg-neutral-800/60', 'text-neutral-900', 'dark:text-neutral-100', 'shadow-sm', 'border', 'border-white/50', 'dark:border-neutral-700/50');
+        btn.classList.add('text-neutral-500', 'dark:text-neutral-400', 'hover:text-neutral-900', 'dark:hover:text-neutral-100', 'hover:bg-white/40', 'dark:hover:bg-neutral-800/40');
       }
     });
   },
@@ -67,7 +67,7 @@ const AppRouter = {
     // Build dropdown items
     list.innerHTML = providers.map(p => {
       const isActive = active?.name === p.name;
-      return `<button data-provider="${p.name}" class="model-opt w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left hover:bg-neutral-100/80 transition-colors ${isActive ? 'font-medium text-neutral-900' : 'text-neutral-600'}">
+      return `<button data-provider="${p.name}" class="model-opt w-full flex items-center gap-2 px-3 py-1.5 text-xs text-left hover:bg-neutral-100/80 dark:hover:bg-neutral-700/60 transition-colors ${isActive ? 'font-medium text-neutral-900 dark:text-neutral-100' : 'text-neutral-600 dark:text-neutral-400'}">
         <span style="background:${p.privacyColor};" class="w-2.5 h-2.5 rounded-sm flex-shrink-0"></span>
         <span class="truncate">${p.name}</span>
         ${isActive ? '<span class="ml-auto text-[10px] text-neutral-400">✓</span>' : ''}
@@ -195,6 +195,27 @@ $('#logoutBtn').addEventListener('click', async () => {
   window.ChatPage.chatHistory = [];
   showAuth();
 });
+
+// ── Theme Toggle ─────────────────────────────────────────────────
+function updateThemeButton() {
+  const icon = $('#themeIcon');
+  const label = $('#themeLabel');
+  if (window.ThemeManager.current === 'dark') {
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+    label.textContent = 'Light mode';
+  } else {
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    label.textContent = 'Dark mode';
+  }
+}
+
+$('#themeToggleBtn').addEventListener('click', () => {
+  window.ThemeManager.toggle();
+  updateThemeButton();
+});
+
+// Set initial button state
+updateThemeButton();
 
 // ── Sidebar Nav ─────────────────────────────────────────────────
 document.querySelectorAll('.nav-btn').forEach(btn => {

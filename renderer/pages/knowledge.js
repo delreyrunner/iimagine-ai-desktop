@@ -26,8 +26,8 @@ const KnowledgePage = {
     el.innerHTML = `
       <div class="p-6 space-y-4">
         <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold tracking-tight text-neutral-900">Knowledge Base</h2>
-          <button id="kbNewCollBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm">
+          <h2 class="text-lg font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">Knowledge Base</h2>
+          <button id="kbNewCollBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">
             + New Collection
           </button>
         </div>
@@ -45,14 +45,14 @@ const KnowledgePage = {
         </div>
 
         <!-- New collection form (hidden) -->
-        <div id="kbNewCollForm" class="hidden bg-white/50 border border-neutral-200/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md space-y-3">
+        <div id="kbNewCollForm" class="hidden bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md space-y-3">
           <input id="kbNewCollName" type="text" placeholder="Collection name"
-            class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 placeholder-neutral-400 focus:bg-white/90 focus:outline-none transition-all shadow-sm" />
+            class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
           <input id="kbNewCollDesc" type="text" placeholder="Description (optional)"
-            class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 placeholder-neutral-400 focus:bg-white/90 focus:outline-none transition-all shadow-sm" />
+            class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
           <div class="flex gap-2">
-            <button id="kbSaveCollBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm">Create</button>
-            <button id="kbCancelCollBtn" class="text-sm text-neutral-500 px-4 py-2 hover:text-neutral-700">Cancel</button>
+            <button id="kbSaveCollBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">Create</button>
+            <button id="kbCancelCollBtn" class="text-sm text-neutral-500 dark:text-neutral-400 px-4 py-2 hover:text-neutral-700 dark:hover:text-neutral-300">Cancel</button>
           </div>
         </div>
 
@@ -60,14 +60,14 @@ const KnowledgePage = {
         <div id="kbCollGrid" class="space-y-2">
           ${collections.length === 0 ? `
             <div class="text-center py-12 text-neutral-400">
-              <div class="p-3 bg-white rounded-2xl border border-neutral-100 shadow-sm text-neutral-400 inline-flex mb-2"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></div>
+              <div class="p-3 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-800 shadow-sm text-neutral-400 inline-flex mb-2"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></div>
               <p class="text-sm">No collections yet. Create one to start building your knowledge base.</p>
             </div>
           ` : collections.map(c => `
-            <div class="kb-coll-item bg-white/50 border border-neutral-200/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md hover:shadow-md cursor-pointer transition-all" data-id="${c.id}">
+            <div class="kb-coll-item bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md hover:shadow-md cursor-pointer transition-all" data-id="${c.id}">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-sm font-medium text-neutral-900">${this._esc(c.name)}</h3>
+                  <h3 class="text-sm font-medium text-neutral-900 dark:text-neutral-100">${this._esc(c.name)}</h3>
                   ${c.description ? `<p class="text-xs text-neutral-500 mt-0.5">${this._esc(c.description)}</p>` : ''}
                 </div>
                 <div class="flex items-center gap-3 text-xs text-neutral-400">
@@ -136,43 +136,43 @@ const KnowledgePage = {
         <div class="flex items-center gap-2 mb-1">
           <button id="kbBackBtn" class="text-neutral-400 hover:text-neutral-600 text-sm">← Back</button>
           <span class="text-neutral-300">|</span>
-          <h2 class="text-lg font-semibold text-neutral-900">${this._esc(collection.name)}</h2>
+          <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">${this._esc(collection.name)}</h2>
         </div>
         ${collection.description ? `<p class="text-xs text-neutral-500 -mt-2">${this._esc(collection.description)}</p>` : ''}
 
         <div class="flex gap-2">
-          <button id="kbPasteBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm">
+          <button id="kbPasteBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">
             + Paste Text
           </button>
-          <button id="kbUploadBtn" class="px-4 py-2.5 rounded-lg bg-white/60 border border-neutral-200/50 text-sm font-medium text-neutral-700 hover:bg-white/90 transition-all shadow-sm flex items-center gap-2">
+          <button id="kbUploadBtn" class="px-4 py-2.5 rounded-lg bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-white/90 dark:hover:bg-neutral-700/90 transition-all shadow-sm flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Upload File
           </button>
-          <button id="kbEmbedBtn" class="px-4 py-2.5 rounded-lg bg-white/60 border border-neutral-200/50 text-sm font-medium text-neutral-700 hover:bg-white/90 transition-all shadow-sm flex items-center gap-2">
+          <button id="kbEmbedBtn" class="px-4 py-2.5 rounded-lg bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-white/90 dark:hover:bg-neutral-700/90 transition-all shadow-sm flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg> Embed All
           </button>
         </div>
 
         <!-- Embed status -->
-        <div id="kbEmbedStatus" class="hidden bg-white/50 border border-neutral-200/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md space-y-2">
+        <div id="kbEmbedStatus" class="hidden bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md space-y-2">
           <div class="flex items-center justify-between">
-            <span id="kbEmbedLabel" class="text-sm text-neutral-700">Embedding...</span>
+            <span id="kbEmbedLabel" class="text-sm text-neutral-700 dark:text-neutral-300">Embedding...</span>
             <span id="kbEmbedCount" class="text-xs text-neutral-400"></span>
           </div>
-          <div class="w-full bg-white/60 rounded-full h-2">
+          <div class="w-full bg-white/60 dark:bg-neutral-800/60 rounded-full h-2">
             <div id="kbEmbedBar" class="bg-gradient-to-r from-neutral-600 to-neutral-900 h-2 rounded-full transition-all" style="width: 0%"></div>
           </div>
           <p id="kbEmbedMsg" class="text-xs text-neutral-500"></p>
         </div>
 
         <!-- Paste form (hidden) -->
-        <div id="kbPasteForm" class="hidden bg-white/50 border border-neutral-200/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md space-y-3">
+        <div id="kbPasteForm" class="hidden bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md space-y-3">
           <input id="kbPasteTitle" type="text" placeholder="Document title"
-            class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 placeholder-neutral-400 focus:bg-white/90 focus:outline-none transition-all shadow-sm" />
+            class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
           <textarea id="kbPasteContent" rows="8" placeholder="Paste your text here..."
-            class="w-full resize-none bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 placeholder-neutral-400 focus:bg-white/90 focus:outline-none transition-all shadow-sm"></textarea>
+            class="w-full resize-none bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm"></textarea>
           <div class="flex gap-2">
-            <button id="kbSavePasteBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm">Save</button>
-            <button id="kbCancelPasteBtn" class="text-sm text-neutral-500 px-4 py-2 hover:text-neutral-700">Cancel</button>
+            <button id="kbSavePasteBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">Save</button>
+            <button id="kbCancelPasteBtn" class="text-sm text-neutral-500 dark:text-neutral-400 px-4 py-2 hover:text-neutral-700 dark:hover:text-neutral-300">Cancel</button>
           </div>
         </div>
 
@@ -180,16 +180,16 @@ const KnowledgePage = {
         <div id="kbDocList" class="space-y-2">
           ${docs.length === 0 ? `
             <div class="text-center py-12 text-neutral-400">
-              <div class="p-3 bg-white rounded-2xl border border-neutral-100 shadow-sm text-neutral-400 inline-flex mb-2"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg></div>
+              <div class="p-3 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-800 shadow-sm text-neutral-400 inline-flex mb-2"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg></div>
               <p class="text-sm">No documents yet. Paste text or upload a file.</p>
             </div>
           ` : docs.map(d => `
-            <div class="kb-doc-item bg-white/50 border border-neutral-200/40 rounded-2xl p-4 shadow-[0_2px_10px_rgb(0,0,0,0.02)] backdrop-blur-md hover:shadow-md cursor-pointer transition-all" data-id="${d.id}">
+            <div class="kb-doc-item bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-4 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md hover:shadow-md cursor-pointer transition-all" data-id="${d.id}">
               <div class="flex items-center justify-between">
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2">
                     <span class="text-xs">${this._sourceIcon(d.source_type)}</span>
-                    <h4 class="text-sm font-medium text-neutral-900 truncate">${this._esc(d.title)}</h4>
+                    <h4 class="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">${this._esc(d.title)}</h4>
                   </div>
                   <div class="flex gap-3 text-xs text-neutral-400 mt-1">
                     <span>${(d.char_count / 1000).toFixed(1)}K chars</span>
@@ -431,9 +431,9 @@ const KnowledgePage = {
         </div>
 
         <input id="kbEditorTitle" type="text" value="${this._escAttr(doc.title)}"
-          class="w-full bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm font-medium text-neutral-700 focus:bg-white/90 focus:outline-none transition-all shadow-sm" />
+          class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
 
-        <textarea id="kbEditorContent" class="w-full flex-1 min-h-[300px] resize-none bg-white/60 border border-neutral-200/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 font-mono focus:bg-white/90 focus:outline-none transition-all shadow-sm">${this._esc(doc.content)}</textarea>
+        <textarea id="kbEditorContent" class="w-full flex-1 min-h-[300px] resize-none bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 font-mono focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm">${this._esc(doc.content)}</textarea>
 
         <div class="flex items-center justify-between">
           <div class="text-xs text-neutral-400">
@@ -442,8 +442,8 @@ const KnowledgePage = {
             · Source: ${doc.source_type}
           </div>
           <div class="flex gap-2">
-            <button id="kbEditorCancel" class="text-sm text-neutral-500 px-4 py-2 hover:text-neutral-700">Cancel</button>
-            <button id="kbEditorSave" class="px-4 py-2.5 rounded-lg bg-neutral-900 text-sm font-medium text-white hover:bg-neutral-800 transition-all shadow-sm">Save Changes</button>
+            <button id="kbEditorCancel" class="text-sm text-neutral-500 dark:text-neutral-400 px-4 py-2 hover:text-neutral-700 dark:hover:text-neutral-300">Cancel</button>
+            <button id="kbEditorSave" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">Save Changes</button>
           </div>
         </div>
       </div>
