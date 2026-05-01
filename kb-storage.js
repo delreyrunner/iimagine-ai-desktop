@@ -194,17 +194,50 @@ function updateDocument(id, { title, content }) {
   const doc = db.prepare('SELECT collection_id FROM kb_documents WHERE id = ?').get(id);
   if (!doc) return null;
 
-  // Remove old chunks + embeddings
-  removeChunksForDocument(id);
-
   const charCount = content.length;
-  db.prepare(`
-    UPDATE kb_documents SET title = ?, content = ?, char_count = ?, embedded = 0, updated_at = datetime('now')
-    WHERE id = ?
-  `).run(title, content, charCount, id);
 
-  // Re-chunk
-  const chunks = chunkText(content, id, doc.collection_id);
+  // Generate new chunks
+  const newChunks = chunkText(content, id, doc.collection_id);
+
+  // Get existing chunks with their content for comparison
+  const oldChunks = db.prepare('SELECT id, chunk_index, content FROM kb_chunks WHERE document_id = ? ORDER BY chunk_index').all(id);
+
+  // Build a map of old chunk content hashes to chunk IDs (for reuse)
+  const oldContentMap = new Map(); // content -> { id, hasEmbedding }
+  for (const oc of oldChunks) {
+    const hasEmb = db.prepare('SELECT 1 FROM kb_embeddings WHERE chunk_id = ? LIMIT 1').get(oc.id);
+    oldContentMap.set(oc.content, { id: oc.id, hasEmbedding: !!hasEmb });
+  }
+
+  // Determine which new chunks match old content (keep their embeddings)
+  const chunksToInsert = [];
+  const chunkIdsToKeep = new Set();
+  let keptEmbeddings = 0;
+
+  for (const nc of newChunks) {
+    const match = oldContentMap.get(nc.content);
+    if (match) {
+      // Content unchanged — keep the old chunk and its embedding
+      chunkIdsToKeep.add(match.id);
+      if (match.hasEmbedding) keptEmbeddings++;
+      // Update chunk_index if it changed
+      db.prepare('UPDATE kb_chunks SET chunk_index = ? WHERE id = ?').run(nc.chunk_index, match.id);
+      oldContentMap.delete(nc.content); // consume the match so duplicates don't reuse
+    } else {
+      // New or modified content — insert fresh chunk
+      chunksToInsert.push(nc);
+    }
+  }
+
+  // Delete old chunks that weren't matched (their content changed or was removed)
+  for (const oc of oldChunks) {
+    if (!chunkIdsToKeep.has(oc.id)) {
+      db.prepare('DELETE FROM kb_embeddings WHERE chunk_id = ?').run(oc.id);
+      db.prepare('DELETE FROM kb_chunks WHERE id = ?').run(oc.id);
+    }
+  }
+
+  // Insert new/modified chunks
   const insertChunk = db.prepare(`
     INSERT INTO kb_chunks (id, document_id, collection_id, chunk_index, content, token_estimate)
     VALUES (?, ?, ?, ?, ?, ?)
@@ -212,12 +245,19 @@ function updateDocument(id, { title, content }) {
   const insertMany = db.transaction((items) => {
     for (const c of items) insertChunk.run(c.id, c.document_id, c.collection_id, c.chunk_index, c.content, c.token_estimate);
   });
-  insertMany(chunks);
+  insertMany(chunksToInsert);
 
-  db.prepare('UPDATE kb_documents SET chunk_count = ? WHERE id = ?').run(chunks.length, id);
+  // Update document
+  const hasUnembedded = chunksToInsert.length > 0;
+  db.prepare(`
+    UPDATE kb_documents SET title = ?, content = ?, char_count = ?, chunk_count = ?,
+      embedded = CASE WHEN ? THEN 0 ELSE embedded END, updated_at = datetime('now')
+    WHERE id = ?
+  `).run(title, content, charCount, newChunks.length, hasUnembedded ? 1 : 0, id);
+
   db.prepare("UPDATE kb_collections SET updated_at = datetime('now') WHERE id = ?").run(doc.collection_id);
 
-  return { id, charCount, chunkCount: chunks.length };
+  return { id, charCount, chunkCount: newChunks.length, newChunks: chunksToInsert.length, keptEmbeddings };
 }
 
 function deleteDocument(id) {
