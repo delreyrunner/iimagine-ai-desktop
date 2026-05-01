@@ -65,7 +65,8 @@
     "better-sqlite3": "^12.9.0",
     "electron-store": "^8.2.0",
     "keytar": "^7.9.0",
-    "pdf-parse": "^2.4.5",
+    "mammoth": "^1.9.1",
+    "pdf-parse": "^1.1.1",
     "sqlite-vec": "^0.1.9"
   },
   "devDependencies": {

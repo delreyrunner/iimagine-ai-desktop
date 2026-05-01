@@ -59,6 +59,7 @@ contextBridge.exposeInMainWorld('api', {
     getConversations: (limit) => ipcRenderer.invoke('storage:getConversations', limit),
     getConversation: (id) => ipcRenderer.invoke('storage:getConversation', id),
     updateConversationTitle: (id, title) => ipcRenderer.invoke('storage:updateConversationTitle', id, title),
+    updateConversationCollection: (id, collectionId) => ipcRenderer.invoke('storage:updateConversationCollection', id, collectionId),
     deleteConversation: (id) => ipcRenderer.invoke('storage:deleteConversation', id),
     // Messages
     addMessage: (data) => ipcRenderer.invoke('storage:addMessage', data),
@@ -85,6 +86,13 @@ contextBridge.exposeInMainWorld('api', {
     getDir: () => ipcRenderer.invoke('media:getDir'),
   },
 
+  // Chat RAG — KB-augmented chat for general chat page
+  chatRag: {
+    send: (data) => ipcRenderer.invoke('chat:ragSend', data),
+    onChunk: (cb) => ipcRenderer.on('chat:rag-chunk', (_, data) => cb(data)),
+    onDone: (cb) => ipcRenderer.on('chat:rag-done', () => cb()),
+  },
+
   // Knowledge Base — local vector-enabled KB
   kb: {
     // Collections
@@ -109,6 +117,10 @@ contextBridge.exposeInMainWorld('api', {
     openFileDialog: () => ipcRenderer.invoke('kb:openFileDialog'),
     // Embed progress events
     onEmbedProgress: (cb) => ipcRenderer.on('kb:embed-progress', (_, data) => cb(data)),
+    // Auto-embed events
+    onAutoEmbedStart: (cb) => ipcRenderer.on('kb:auto-embed-start', (_, data) => cb(data)),
+    onAutoEmbedProgress: (cb) => ipcRenderer.on('kb:auto-embed-progress', (_, data) => cb(data)),
+    onAutoEmbedDone: (cb) => ipcRenderer.on('kb:auto-embed-done', (_, data) => cb(data)),
   },
 
   // Assistants — custom GPT-like AI assistants

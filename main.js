@@ -276,6 +276,148 @@ function createTray() {
   tray.on('click', () => mainWindow?.show());
 }
 
+// ── CSV Parser ──────────────────────────────────────────────────
+function parseCsvToReadableText(raw) {
+  const lines = raw.split(/\r?\n/).filter(l => l.trim().length > 0);
+  if (!lines.length) return raw;
+
+  const parseLine = (line) => {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+    result.push(current.trim());
+    return result.map(cell => {
+      const t = cell.trim();
+      return (t.startsWith('"') && t.endsWith('"'))
+        ? t.slice(1, -1).replace(/""/g, '"').trim()
+        : t;
+    });
+  };
+
+  const rows = lines.map(parseLine);
+  const headers = rows[0] || [];
+  const dataRows = rows.slice(1);
+
+  let text = `CSV CONTENT\n\nColumns: ${headers.join(' | ')}\n\n`;
+  const max = Math.min(dataRows.length, 500);
+  for (let i = 0; i < max; i++) {
+    const row = dataRows[i];
+    if (headers.length === row.length && headers.length > 0) {
+      const pairs = headers.map((h, idx) => `${h}: ${row[idx]}`);
+      text += `Row ${i + 1}: ${pairs.join(' | ')}\n`;
+    } else {
+      text += `Row ${i + 1}: ${row.join(' | ')}\n`;
+    }
+  }
+  if (dataRows.length > max) {
+    text += `\n... ${dataRows.length - max} more rows not shown ...\n`;
+  }
+  return text;
+}
+
+// ── Auto-Embed (fire-and-forget after add/update) ───────────────
+let autoEmbedRunning = false;
+
+async function autoEmbedCollection(collectionId) {
+  if (autoEmbedRunning) return; // skip if already running
+  if (!kbStorage.isVecLoaded()) return;
+
+  const EMBED_MODEL = 'nomic-embed-text';
+
+  // Check Ollama is running
+  try {
+    const res = await fetch(`${OLLAMA_URL}/api/tags`);
+    if (!res.ok) return;
+  } catch {
+    return; // Ollama not running — skip silently
+  }
+
+  // Check embedding model is available (don't auto-pull)
+  try {
+    const res = await fetch(`${OLLAMA_URL}/api/tags`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const hasModel = (data.models || []).some(m =>
+      m.name === EMBED_MODEL || m.name.startsWith(EMBED_MODEL + ':')
+    );
+    if (!hasModel) return; // model not installed — skip silently
+  } catch {
+    return;
+  }
+
+  // Get unembedded chunks
+  const chunks = kbStorage.getUnembeddedChunks(collectionId, 5000);
+  if (!chunks.length) return;
+
+  autoEmbedRunning = true;
+  mainWindow?.webContents.send('kb:auto-embed-start', {
+    collectionId,
+    total: chunks.length,
+  });
+
+  const BATCH_SIZE = 10;
+  let totalStored = 0;
+
+  try {
+    for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+      const batch = chunks.slice(i, i + BATCH_SIZE);
+
+      for (const chunk of batch) {
+        try {
+          const res = await fetch(`${OLLAMA_URL}/api/embed`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: EMBED_MODEL, input: chunk.content }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const embedding = data.embeddings?.[0] || data.embedding || null;
+            if (embedding) {
+              kbStorage.storeEmbeddings([{
+                chunkId: chunk.id,
+                embedding: new Float32Array(embedding),
+              }]);
+              totalStored++;
+            }
+          }
+        } catch {
+          // skip individual failures
+        }
+      }
+
+      const processed = Math.min(i + BATCH_SIZE, chunks.length);
+      mainWindow?.webContents.send('kb:auto-embed-progress', {
+        collectionId,
+        processed,
+        total: chunks.length,
+      });
+    }
+  } finally {
+    autoEmbedRunning = false;
+    mainWindow?.webContents.send('kb:auto-embed-done', {
+      collectionId,
+      embedded: totalStored,
+      total: chunks.length,
+    });
+  }
+}
+
 // ── IPC Handlers ────────────────────────────────────────────────
 function setupIPC() {
   // Auth
@@ -561,6 +703,7 @@ function setupIPC() {
   ipcMain.handle('storage:getConversations', (event, limit) => storage.getConversations(limit));
   ipcMain.handle('storage:getConversation', (event, id) => storage.getConversation(id));
   ipcMain.handle('storage:updateConversationTitle', (event, id, title) => storage.updateConversationTitle(id, title));
+  ipcMain.handle('storage:updateConversationCollection', (event, id, collectionId) => storage.updateConversationCollection(id, collectionId));
   ipcMain.handle('storage:deleteConversation', (event, id) => storage.deleteConversation(id));
 
   // Storage — Messages
@@ -610,10 +753,29 @@ function setupIPC() {
   ipcMain.handle('kb:updateCollection', (event, id, data) => kbStorage.updateCollection(id, data));
   ipcMain.handle('kb:deleteCollection', (event, id) => kbStorage.deleteCollection(id));
 
-  ipcMain.handle('kb:addDocument', (event, data) => kbStorage.addDocument(data));
+  ipcMain.handle('kb:addDocument', async (event, data) => {
+    const result = kbStorage.addDocument(data);
+    // Fire-and-forget: auto-embed new chunks
+    autoEmbedCollection(data.collectionId).catch(err =>
+      console.warn('[KB] Auto-embed after add failed:', err.message)
+    );
+    return result;
+  });
   ipcMain.handle('kb:getDocuments', (event, collectionId) => kbStorage.getDocuments(collectionId));
   ipcMain.handle('kb:getDocument', (event, id) => kbStorage.getDocument(id));
-  ipcMain.handle('kb:updateDocument', (event, id, data) => kbStorage.updateDocument(id, data));
+  ipcMain.handle('kb:updateDocument', async (event, id, data) => {
+    const result = kbStorage.updateDocument(id, data);
+    if (result) {
+      // Fire-and-forget: auto-embed any new/changed chunks
+      const doc = kbStorage.getDocument(id);
+      if (doc) {
+        autoEmbedCollection(doc.collection_id).catch(err =>
+          console.warn('[KB] Auto-embed after update failed:', err.message)
+        );
+      }
+    }
+    return result;
+  });
   ipcMain.handle('kb:deleteDocument', (event, id) => kbStorage.deleteDocument(id));
 
   ipcMain.handle('kb:storeEmbeddings', (event, items) => {
@@ -634,6 +796,134 @@ function setupIPC() {
 
   // Assistants
   ipcMain.handle('asst:create', (event, data) => assistantStorage.createAssistant(data));
+
+  // Chat RAG — KB-augmented chat for the general chat page
+  ipcMain.handle('chat:ragSend', async (event, { conversationId, userMessage, collectionId, chatHistory }) => {
+    try {
+      console.log('[ChatRAG] Starting KB chat, collection:', collectionId);
+
+      // RAG: retrieve relevant KB chunks
+      let contextChunks = [];
+      if (collectionId && kbStorage.isVecLoaded()) {
+        try {
+          console.log('[ChatRAG] Embedding query for KB search...');
+          const embedRes = await fetch(`${OLLAMA_URL}/api/embed`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: 'nomic-embed-text', input: userMessage }),
+          });
+          if (embedRes.ok) {
+            const embedData = await embedRes.json();
+            const queryVec = embedData.embeddings?.[0];
+            if (queryVec) {
+              console.log('[ChatRAG] Searching KB, vector dims:', queryVec.length);
+              const results = kbStorage.searchSimilar(new Float32Array(queryVec), collectionId, 5);
+              contextChunks = results.map(r => ({ content: r.content, docTitle: r.doc_title, distance: r.distance }));
+              console.log('[ChatRAG] Found', contextChunks.length, 'relevant chunks');
+              // Log chunk previews for debugging
+              contextChunks.forEach((c, i) => {
+                console.log(`[ChatRAG] Chunk ${i}: "${c.docTitle}" (distance: ${c.distance?.toFixed(4)}) — ${c.content.substring(0, 100)}...`);
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('[ChatRAG] KB search failed:', err.message);
+        }
+      }
+
+      // Build system prompt with KB context
+      let systemContent = 'You are a knowledge base assistant. Your primary job is to answer questions based on the documents provided to you.';
+      if (contextChunks.length > 0) {
+        const kbContext = contextChunks.map(c =>
+          `[Source: ${c.docTitle}]\n${c.content}`
+        ).join('\n\n---\n\n');
+        systemContent = `You are a knowledge base assistant. You MUST answer questions based on the documents provided below. Base your answers on the document content. If the documents contain relevant information, use it directly and cite the source document. If the documents do not contain information relevant to the question, say "I couldn't find information about that in your knowledge base" and offer to help with what IS in the documents.
+
+DOCUMENTS FROM KNOWLEDGE BASE:
+
+${kbContext}
+
+END OF DOCUMENTS
+
+Remember: Answer based on the document content above. Do not make up information that is not in the documents.`;
+        console.log('[ChatRAG] System prompt length:', systemContent.length, 'chars');
+      } else {
+        console.log('[ChatRAG] WARNING: No context chunks found, responding without KB context');
+      }
+
+      // Build messages array with system prompt
+      // IMPORTANT: Limit chat history to avoid overwhelming small models.
+      // The system prompt with KB context must remain dominant.
+      const recentHistory = (chatHistory || []).slice(-6); // Last 3 exchanges max
+      const messages = [
+        { role: 'system', content: systemContent },
+        ...recentHistory,
+      ];
+      console.log('[ChatRAG] Sending', messages.length, 'messages to model (trimmed from', (chatHistory || []).length, '). Roles:', messages.map(m => m.role).join(', '));
+
+      // Determine which provider to use — reuse the active provider logic
+      const pm = store.get('provider.active');
+      const providerType = pm?.type || 'local';
+
+      if (providerType === 'local') {
+        // Use Ollama
+        const ollamaStatus = await checkOllama();
+        if (!ollamaStatus.running || !ollamaStatus.models?.length) {
+          mainWindow?.webContents.send('chat:rag-done');
+          return { success: false, error: 'No AI model available. Install a local model in Settings.' };
+        }
+        const EMBED_ONLY = ['nomic-embed-text', 'all-minilm', 'mxbai-embed-large', 'snowflake-arctic-embed'];
+        const chatModels = ollamaStatus.models.filter(m => !EMBED_ONLY.some(e => m.name.startsWith(e)));
+        if (!chatModels.length) {
+          mainWindow?.webContents.send('chat:rag-done');
+          return { success: false, error: 'No chat model available.' };
+        }
+        const model = pm?.model || chatModels[0].name;
+        console.log('[ChatRAG] Using model:', model, 'with', messages.length, 'messages');
+
+        const res = await fetch(`${OLLAMA_URL}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model, messages, stream: true }),
+        });
+        if (!res.ok) {
+          mainWindow?.webContents.send('chat:rag-done');
+          return { success: false, error: `Ollama error: ${res.status}` };
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let fullResponse = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value);
+          for (const line of chunk.split('\n').filter(Boolean)) {
+            try {
+              const parsed = JSON.parse(line);
+              if (parsed.message?.content) {
+                fullResponse += parsed.message.content;
+                mainWindow?.webContents.send('chat:rag-chunk', { content: parsed.message.content });
+              }
+            } catch {}
+          }
+        }
+        mainWindow?.webContents.send('chat:rag-done');
+        console.log('[ChatRAG] Response complete, length:', fullResponse.length, 'chars');
+        return { success: true, contextUsed: contextChunks.length };
+      }
+
+      // For non-local providers, inject KB context into the regular provider stream
+      // The chat page will fall back to the normal provider stream with augmented messages
+      mainWindow?.webContents.send('chat:rag-done');
+      return { success: true, contextUsed: contextChunks.length, augmentedMessages: messages };
+
+    } catch (err) {
+      console.error('[ChatRAG] Error:', err);
+      mainWindow?.webContents.send('chat:rag-done');
+      return { success: false, error: err.message };
+    }
+  });
   ipcMain.handle('asst:list', () => assistantStorage.getAssistants());
   ipcMain.handle('asst:get', (event, id) => assistantStorage.getAssistant(id));
   ipcMain.handle('asst:update', (event, id, data) => assistantStorage.updateAssistant(id, data));
@@ -816,8 +1106,16 @@ function setupIPC() {
       const filename = path.basename(filePath);
       const buffer = fs.readFileSync(filePath);
 
-      if (ext === '.txt' || ext === '.md' || ext === '.csv') {
+      if (ext === '.txt' || ext === '.md') {
         files.push({ filename, content: buffer.toString('utf-8'), type: ext.slice(1) });
+      } else if (ext === '.csv') {
+        try {
+          const content = parseCsvToReadableText(buffer.toString('utf-8'));
+          files.push({ filename, content, type: 'csv' });
+        } catch (err) {
+          console.error('[KB] CSV parse error:', err.message);
+          files.push({ filename, content: buffer.toString('utf-8'), type: 'csv' });
+        }
       } else if (ext === '.pdf') {
         try {
           const pdfParse = require('pdf-parse');
@@ -828,8 +1126,14 @@ function setupIPC() {
           files.push({ filename, content: '[PDF parsing failed — copy and paste the text instead]', type: 'pdf' });
         }
       } else if (ext === '.docx') {
-        // Send raw buffer as base64 for renderer to parse
-        files.push({ filename, base64: buffer.toString('base64'), type: 'docx' });
+        try {
+          const mammoth = require('mammoth');
+          const result = await mammoth.extractRawText({ buffer });
+          files.push({ filename, content: result.value || '', type: 'docx' });
+        } catch (err) {
+          console.error('[KB] DOCX parse error:', err.message);
+          files.push({ filename, content: '[DOCX parsing failed — copy and paste the text instead]', type: 'docx' });
+        }
       }
     }
     return { canceled: false, files };

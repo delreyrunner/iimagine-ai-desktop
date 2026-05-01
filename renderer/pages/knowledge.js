@@ -4,6 +4,11 @@ const KnowledgePage = {
   currentView: 'collections', // 'collections' | 'documents' | 'editor' | 'search'
   currentCollection: null,
   currentDocument: null,
+  collPage: 0,
+  docPage: 0,
+  collSearch: '',
+  docSearch: '',
+  PAGE_SIZE: 10,
 
   render(container) {
     container.innerHTML = `
@@ -20,8 +25,18 @@ const KnowledgePage = {
     this.currentCollection = null;
     const el = document.querySelector('#kbContent');
 
-    const collections = await window.api.kb.getCollections();
+    const allCollections = await window.api.kb.getCollections();
     const stats = await window.api.kb.getStats();
+
+    // Filter by search
+    const q = this.collSearch.toLowerCase();
+    const filtered = q ? allCollections.filter(c => c.name.toLowerCase().includes(q) || (c.description || '').toLowerCase().includes(q)) : allCollections;
+
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / this.PAGE_SIZE));
+    this.collPage = Math.min(this.collPage, totalPages - 1);
+    const start = this.collPage * this.PAGE_SIZE;
+    const collections = filtered.slice(start, start + this.PAGE_SIZE);
 
     el.innerHTML = `
       <div class="p-6 space-y-4">
@@ -36,13 +51,10 @@ const KnowledgePage = {
           <span>${stats.collections} collection${stats.collections !== 1 ? 's' : ''}</span>
           <span>·</span>
           <span>${stats.documents} document${stats.documents !== 1 ? 's' : ''}</span>
-          <span>·</span>
-          <span>${stats.chunks} chunks</span>
-          <span>·</span>
-          <span class="${stats.vecLoaded ? 'text-emerald-600' : 'text-amber-500'}">
-            ${stats.vecLoaded ? '✓ Vector search ready' : '⚠ Vector search unavailable'}
-          </span>
         </div>
+
+        <input id="kbCollSearch" type="text" placeholder="Search collections..." value="${this._escAttr(this.collSearch)}"
+          class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
 
         <!-- New collection form (hidden) -->
         <div id="kbNewCollForm" class="hidden bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md space-y-3">
@@ -58,26 +70,36 @@ const KnowledgePage = {
 
         <!-- Collections grid -->
         <div id="kbCollGrid" class="space-y-2">
-          ${collections.length === 0 ? `
+          ${collections.length === 0 && this.collPage === 0 ? `
             <div class="text-center py-12 text-neutral-400">
               <div class="p-3 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-800 shadow-sm text-neutral-400 inline-flex mb-2"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></div>
               <p class="text-sm">No collections yet. Create one to start building your knowledge base.</p>
             </div>
           ` : collections.map(c => `
             <div class="kb-coll-item bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md hover:shadow-md cursor-pointer transition-all" data-id="${c.id}">
-              <div class="flex items-center justify-between">
-                <div>
+              <div class="flex items-start justify-between">
+                <div class="min-w-0 flex-1">
                   <h3 class="text-sm font-medium text-neutral-900 dark:text-neutral-100">${this._esc(c.name)}</h3>
-                  ${c.description ? `<p class="text-xs text-neutral-500 mt-0.5">${this._esc(c.description)}</p>` : ''}
+                  <div class="flex gap-2 text-xs text-neutral-400 mt-1">
+                    <span>${c.doc_count} doc${c.doc_count !== 1 ? 's' : ''}</span>
+                    <span>·</span>
+                    <span>${this._formatDate(c.updated_at)}</span>
+                  </div>
+                  ${c.description ? `<p class="text-xs text-neutral-500 mt-1">${this._esc(c.description)}</p>` : ''}
                 </div>
-                <div class="flex items-center gap-3 text-xs text-neutral-400">
-                  <span>${c.doc_count} doc${c.doc_count !== 1 ? 's' : ''}</span>
-                  <span>${c.chunk_count} chunks</span>
-                  <button class="kb-del-coll text-neutral-300 hover:text-rose-600 text-base" data-id="${c.id}" title="Delete">✕</button>
+                <div class="flex items-center gap-5 ml-4 shrink-0">
+                  <button class="kb-edit-coll text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200" data-id="${c.id}" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                  <button class="kb-del-coll text-neutral-300 hover:text-rose-600" data-id="${c.id}" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                 </div>
               </div>
             </div>
           `).join('')}
+        </div>
+
+        <div class="flex items-center justify-center gap-2 pt-2">
+          <button id="kbCollPrev" class="px-3 py-1.5 rounded-lg text-xs font-medium ${this.collPage === 0 ? 'text-neutral-300 dark:text-neutral-600 cursor-default' : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60'}">← Prev</button>
+          <span class="text-xs text-neutral-400">Page ${this.collPage + 1} of ${totalPages}</span>
+          <button id="kbCollNext" class="px-3 py-1.5 rounded-lg text-xs font-medium ${this.collPage >= totalPages - 1 ? 'text-neutral-300 dark:text-neutral-600 cursor-default' : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60'}">Next →</button>
         </div>
       </div>
     `;
@@ -104,8 +126,18 @@ const KnowledgePage = {
     // Click collection to open
     document.querySelectorAll('.kb-coll-item').forEach(item => {
       item.addEventListener('click', (e) => {
-        if (e.target.classList.contains('kb-del-coll')) return;
+        if (e.target.closest('.kb-del-coll') || e.target.closest('.kb-edit-coll')) return;
+        this.docPage = 0;
         this._showDocuments(item.dataset.id);
+      });
+    });
+
+    // Edit collection (opens it)
+    document.querySelectorAll('.kb-edit-coll').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.docPage = 0;
+        this._showDocuments(btn.dataset.id);
       });
     });
 
@@ -119,6 +151,21 @@ const KnowledgePage = {
         }
       });
     });
+
+    // Collection search
+    document.querySelector('#kbCollSearch')?.addEventListener('input', (e) => {
+      this.collSearch = e.target.value;
+      this.collPage = 0;
+      this._showCollections();
+    });
+
+    // Pagination
+    document.querySelector('#kbCollPrev')?.addEventListener('click', () => {
+      if (this.collPage > 0) { this.collPage--; this._showCollections(); }
+    });
+    document.querySelector('#kbCollNext')?.addEventListener('click', () => {
+      this.collPage++; this._showCollections();
+    });
   },
 
   // ── Documents List ──────────────────────────────────────────
@@ -128,7 +175,17 @@ const KnowledgePage = {
     if (!collection) return this._showCollections();
     this.currentCollection = collection;
 
-    const docs = await window.api.kb.getDocuments(collectionId);
+    const allDocs = await window.api.kb.getDocuments(collectionId);
+
+    // Filter by search
+    const dq = this.docSearch.toLowerCase();
+    const filteredDocs = dq ? allDocs.filter(d => d.title.toLowerCase().includes(dq) || (d.description || '').toLowerCase().includes(dq)) : allDocs;
+
+    const total = filteredDocs.length;
+    const totalPages = Math.max(1, Math.ceil(total / this.PAGE_SIZE));
+    this.docPage = Math.min(this.docPage, totalPages - 1);
+    const start = this.docPage * this.PAGE_SIZE;
+    const docs = filteredDocs.slice(start, start + this.PAGE_SIZE);
     const el = document.querySelector('#kbContent');
 
     el.innerHTML = `
@@ -144,28 +201,26 @@ const KnowledgePage = {
           <button id="kbAddDataBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">
             + Add Data
           </button>
-          <button id="kbEmbedBtn" class="px-4 py-2.5 rounded-lg bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-white/90 dark:hover:bg-neutral-700/90 transition-all shadow-sm flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg> Embed All
-          </button>
         </div>
 
-        <!-- Embed status -->
-        <div id="kbEmbedStatus" class="hidden bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md space-y-2">
-          <div class="flex items-center justify-between">
-            <span id="kbEmbedLabel" class="text-sm text-neutral-700 dark:text-neutral-300">Embedding...</span>
-            <span id="kbEmbedCount" class="text-xs text-neutral-400"></span>
+        <input id="kbDocSearch" type="text" placeholder="Search documents..." value="${this._escAttr(this.docSearch)}"
+          class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
+
+        <!-- Auto-embed status indicator (shown when embedding in background) -->
+        <div id="kbAutoEmbedStatus" class="hidden flex items-center gap-2 px-3 py-2 bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-xl text-xs text-neutral-500 dark:text-neutral-400">
+          <div class="w-3 h-3 rounded-full border-2 border-neutral-400 border-t-neutral-900 dark:border-neutral-500 dark:border-t-neutral-100 animate-spin"></div>
+          <span id="kbAutoEmbedLabel">Embedding...</span>
+          <div class="flex-1 bg-neutral-100 dark:bg-neutral-700 rounded-full h-1.5 ml-1">
+            <div id="kbAutoEmbedBar" class="bg-gradient-to-r from-neutral-600 to-neutral-900 dark:from-neutral-400 dark:to-neutral-100 h-1.5 rounded-full transition-all" style="width: 0%"></div>
           </div>
-          <div class="w-full bg-white/60 dark:bg-neutral-800/60 rounded-full h-2">
-            <div id="kbEmbedBar" class="bg-gradient-to-r from-neutral-600 to-neutral-900 h-2 rounded-full transition-all" style="width: 0%"></div>
-          </div>
-          <p id="kbEmbedMsg" class="text-xs text-neutral-500"></p>
+          <span id="kbAutoEmbedCount" class="text-neutral-400 tabular-nums"></span>
         </div>
 
         <!-- Unified Add Data form (hidden) -->
         <div id="kbAddDataForm" class="hidden bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md space-y-3">
           <input id="kbAddTitle" type="text" placeholder="Document title (required)"
             class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
-          <input id="kbAddDesc" type="text" placeholder="Description (optional — helps you find it later)"
+          <input id="kbAddDesc" type="text" placeholder="Description (optional)"
             class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
           <textarea id="kbAddContent" rows="8" placeholder="Paste your text here..."
             class="w-full resize-none bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm"></textarea>
@@ -174,6 +229,7 @@ const KnowledgePage = {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> or upload a file
             </button>
             <span id="kbAddFilename" class="text-xs text-neutral-400 dark:text-neutral-500 truncate"></span>
+            <span class="text-xs text-neutral-400 dark:text-neutral-500 ml-auto">.pdf .docx .txt .csv .md</span>
           </div>
           <div class="flex gap-2">
             <button id="kbSaveAddBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">Save</button>
@@ -191,23 +247,28 @@ const KnowledgePage = {
             </div>
           ` : docs.map(d => `
             <div class="kb-doc-item bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-4 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md hover:shadow-md cursor-pointer transition-all" data-id="${d.id}">
-              <div class="flex items-center justify-between">
+              <div class="flex items-start justify-between">
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2">
-                    <span class="text-xs">${this._sourceIcon(d.source_type)}</span>
+                    <span class="text-xs shrink-0">${this._sourceIcon(d.source_type)}</span>
                     <h4 class="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">${this._esc(d.title)}</h4>
                   </div>
-                  <div class="flex gap-3 text-xs text-neutral-400 mt-1">
-                    <span>${(d.char_count / 1000).toFixed(1)}K chars</span>
-                    <span>${d.chunk_count} chunks</span>
-                    <span class="${d.embedded ? 'text-emerald-500' : 'text-neutral-300'}">${d.embedded ? '✓ embedded' : '○ not embedded'}</span>
-                    ${d.original_filename ? `<span>${d.original_filename}</span>` : ''}
-                  </div>
+                  <p class="text-xs text-neutral-400 mt-1">${this._formatDate(d.updated_at || d.created_at)}</p>
+                  ${d.description ? `<p class="text-xs text-neutral-400 mt-0.5 truncate">${this._esc(this._truncate(d.description, 80))}</p>` : ''}
                 </div>
-                <button class="kb-del-doc text-neutral-300 hover:text-rose-600 text-base ml-2" data-id="${d.id}" title="Delete">✕</button>
+                <div class="flex items-center gap-5 ml-4 shrink-0">
+                  <button class="kb-edit-doc text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200" data-id="${d.id}" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                  <button class="kb-del-doc text-neutral-300 hover:text-rose-600" data-id="${d.id}" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                </div>
               </div>
             </div>
           `).join('')}
+        </div>
+
+        <div class="flex items-center justify-center gap-2 pt-2">
+          <button id="kbDocPrev" class="px-3 py-1.5 rounded-lg text-xs font-medium ${this.docPage === 0 ? 'text-neutral-300 dark:text-neutral-600 cursor-default' : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60'}">← Prev</button>
+          <span class="text-xs text-neutral-400">Page ${this.docPage + 1} of ${totalPages}</span>
+          <button id="kbDocNext" class="px-3 py-1.5 rounded-lg text-xs font-medium ${this.docPage >= totalPages - 1 ? 'text-neutral-300 dark:text-neutral-600 cursor-default' : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60'}">Next →</button>
         </div>
       </div>
     `;
@@ -216,19 +277,79 @@ const KnowledgePage = {
   },
 
   _bindDocEvents(collectionId) {
-    document.querySelector('#kbBackBtn')?.addEventListener('click', () => this._showCollections());
+    document.querySelector('#kbBackBtn')?.addEventListener('click', () => {
+      this.docPage = 0;
+      this.docSearch = '';
+      this._showCollections();
+    });
 
-    // Embed all chunks
-    document.querySelector('#kbEmbedBtn')?.addEventListener('click', () => this._embedCollection(collectionId));
+    // Document search
+    document.querySelector('#kbDocSearch')?.addEventListener('input', (e) => {
+      this.docSearch = e.target.value;
+      this.docPage = 0;
+      this._showDocuments(collectionId);
+    });
 
-    // Listen for embed progress
-    window.api.kb.onEmbedProgress((data) => {
-      const bar = document.querySelector('#kbEmbedBar');
-      const count = document.querySelector('#kbEmbedCount');
+    // Document pagination
+    document.querySelector('#kbDocPrev')?.addEventListener('click', () => {
+      if (this.docPage > 0) { this.docPage--; this._showDocuments(collectionId); }
+    });
+    document.querySelector('#kbDocNext')?.addEventListener('click', () => {
+      this.docPage++; this._showDocuments(collectionId);
+    });
+
+    // Listen for auto-embed events from main process
+    window.api.kb.onAutoEmbedStart((data) => {
+      if (data.collectionId !== collectionId) return;
+      const el = document.querySelector('#kbAutoEmbedStatus');
+      const label = document.querySelector('#kbAutoEmbedLabel');
+      const bar = document.querySelector('#kbAutoEmbedBar');
+      const count = document.querySelector('#kbAutoEmbedCount');
+      if (el) {
+        el.classList.remove('hidden');
+        if (label) label.textContent = `Embedding ${data.total} chunks...`;
+        if (bar) bar.style.width = '0%';
+        if (count) count.textContent = `0/${data.total}`;
+      }
+    });
+
+    window.api.kb.onAutoEmbedProgress((data) => {
+      if (data.collectionId !== collectionId) return;
+      const bar = document.querySelector('#kbAutoEmbedBar');
+      const count = document.querySelector('#kbAutoEmbedCount');
       if (bar && count) {
         const pct = Math.round((data.processed / data.total) * 100);
         bar.style.width = pct + '%';
-        count.textContent = `${data.processed} / ${data.total}`;
+        count.textContent = `${data.processed}/${data.total}`;
+      }
+    });
+
+    window.api.kb.onAutoEmbedDone((data) => {
+      if (data.collectionId !== collectionId) return;
+      const el = document.querySelector('#kbAutoEmbedStatus');
+      const label = document.querySelector('#kbAutoEmbedLabel');
+      const bar = document.querySelector('#kbAutoEmbedBar');
+      const count = document.querySelector('#kbAutoEmbedCount');
+      if (el && label) {
+        label.textContent = `Embedded ${data.embedded} chunks ✓`;
+        if (bar) bar.style.width = '100%';
+        if (count) count.textContent = '';
+        // Hide after a short delay and refresh doc list
+        setTimeout(() => {
+          el.classList.add('hidden');
+          this._showDocuments(collectionId);
+        }, 2000);
+      }
+    });
+
+    // Listen for embed progress (manual batch from main process)
+    window.api.kb.onEmbedProgress((data) => {
+      const bar = document.querySelector('#kbAutoEmbedBar');
+      const count = document.querySelector('#kbAutoEmbedCount');
+      if (bar && count) {
+        const pct = Math.round((data.processed / data.total) * 100);
+        bar.style.width = pct + '%';
+        count.textContent = `${data.processed}/${data.total}`;
       }
     });
 
@@ -257,14 +378,7 @@ const KnowledgePage = {
       if (result.canceled || !result.files.length) return;
 
       const file = result.files[0];
-      let content = '';
-      if (file.content) {
-        content = file.content;
-      } else if (file.base64 && file.type === 'pdf') {
-        content = await this._parsePdfBase64(file.base64);
-      } else if (file.base64 && file.type === 'docx') {
-        content = await this._parseDocxBase64(file.base64);
-      }
+      const content = file.content || '';
 
       if (!content.trim()) {
         alert(`Could not extract text from ${file.filename}`);
@@ -306,8 +420,16 @@ const KnowledgePage = {
     // Click doc to edit
     document.querySelectorAll('.kb-doc-item').forEach(item => {
       item.addEventListener('click', (e) => {
-        if (e.target.classList.contains('kb-del-doc')) return;
+        if (e.target.closest('.kb-del-doc') || e.target.closest('.kb-edit-doc')) return;
         this._showEditor(item.dataset.id);
+      });
+    });
+
+    // Edit doc button
+    document.querySelectorAll('.kb-edit-doc').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._showEditor(btn.dataset.id);
       });
     });
 
@@ -321,129 +443,6 @@ const KnowledgePage = {
         }
       });
     });
-  },
-
-  // ── Embed Collection ──────────────────────────────────────────
-  async _embedCollection(collectionId) {
-    const EMBED_MODEL = 'nomic-embed-text';
-    const statusEl = document.querySelector('#kbEmbedStatus');
-    const labelEl = document.querySelector('#kbEmbedLabel');
-    const barEl = document.querySelector('#kbEmbedBar');
-    const countEl = document.querySelector('#kbEmbedCount');
-    const msgEl = document.querySelector('#kbEmbedMsg');
-    const btn = document.querySelector('#kbEmbedBtn');
-
-    if (!statusEl) return;
-    statusEl.classList.remove('hidden');
-    btn.disabled = true;
-    btn.textContent = 'Embedding...';
-    barEl.style.width = '0%';
-
-    // Step 1: Check if Ollama is running
-    labelEl.textContent = 'Checking AI engine...';
-    msgEl.textContent = '';
-    const ollamaStatus = await window.api.ollama.status();
-    if (!ollamaStatus.running) {
-      labelEl.textContent = 'Ollama not running';
-      msgEl.textContent = 'Start Ollama first (install from Settings → Local AI)';
-      btn.disabled = false;
-      btn.textContent = 'Embed All';
-      return;
-    }
-
-    // Step 2: Check if embedding model is available
-    labelEl.textContent = 'Checking embedding model...';
-    const hasModel = await window.api.ollama.hasModel(EMBED_MODEL);
-    if (!hasModel) {
-      labelEl.textContent = `Pulling ${EMBED_MODEL} (~275MB)...`;
-      msgEl.textContent = 'First-time setup — this only happens once';
-      barEl.style.width = '10%';
-
-      // Pull the model — this awaits the full download
-      const pullResult = await window.api.ollama.pull(EMBED_MODEL);
-
-      if (!pullResult.success) {
-        labelEl.textContent = 'Failed to pull embedding model';
-        msgEl.textContent = pullResult.error || 'Unknown error';
-        btn.disabled = false;
-        btn.textContent = 'Embed All';
-        return;
-      }
-
-      // Verify it's now available
-      const hasNow = await window.api.ollama.hasModel(EMBED_MODEL);
-      if (!hasNow) {
-        labelEl.textContent = 'Embedding model not available';
-        msgEl.textContent = `Pull ${EMBED_MODEL} manually from Settings`;
-        btn.disabled = false;
-        btn.textContent = 'Embed All';
-        return;
-      }
-
-      barEl.style.width = '15%';
-      labelEl.textContent = 'Embedding model ready ✓';
-    }
-
-    // Step 3: Get unembedded chunks
-    labelEl.textContent = 'Finding chunks to embed...';
-    barEl.style.width = '15%';
-    const chunks = await window.api.kb.getUnembeddedChunks(collectionId, 5000);
-
-    if (!chunks.length) {
-      labelEl.textContent = 'All chunks already embedded ✓';
-      msgEl.textContent = '';
-      barEl.style.width = '100%';
-      btn.disabled = false;
-      btn.textContent = 'Embed All';
-      return;
-    }
-
-    // Step 4: Generate embeddings in batches via Ollama
-    labelEl.textContent = `Embedding ${chunks.length} chunks...`;
-    countEl.textContent = `0 / ${chunks.length}`;
-    msgEl.textContent = 'Processing locally with nomic-embed-text — nothing leaves your machine';
-
-    const BATCH_SIZE = 10;
-    let totalStored = 0;
-
-    for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
-      const batch = chunks.slice(i, i + BATCH_SIZE);
-      const texts = batch.map(c => c.content);
-
-      const results = await window.api.ollama.embedBatch(EMBED_MODEL, texts);
-
-      // Store successful embeddings
-      const toStore = [];
-      for (let j = 0; j < results.length; j++) {
-        if (results[j].success && results[j].embedding) {
-          toStore.push({
-            chunkId: batch[j].id,
-            embedding: Array.from(results[j].embedding),
-          });
-        }
-      }
-
-      if (toStore.length > 0) {
-        await window.api.kb.storeEmbeddings(toStore);
-        totalStored += toStore.length;
-      }
-
-      // Update progress
-      const processed = Math.min(i + BATCH_SIZE, chunks.length);
-      const pct = Math.round((processed / chunks.length) * 100);
-      barEl.style.width = pct + '%';
-      countEl.textContent = `${processed} / ${chunks.length}`;
-    }
-
-    // Done
-    labelEl.textContent = `Embedded ${totalStored} chunks ✓`;
-    msgEl.textContent = 'Vector search is now active for this collection';
-    barEl.style.width = '100%';
-    btn.disabled = false;
-    btn.textContent = 'Embed All';
-
-    // Refresh the document list to show updated embed status
-    setTimeout(() => this._showDocuments(collectionId), 1500);
   },
 
   // ── Document Editor ─────────────────────────────────────────
@@ -520,6 +519,29 @@ const KnowledgePage = {
     return (str || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   },
 
+  _formatDate(dateStr) {
+    if (!dateStr) return '';
+    try {
+      // SQLite datetime('now') stores UTC without a Z suffix — append Z so JS parses it as UTC
+      const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
+      if (isNaN(d.getTime())) return '';
+      const now = new Date();
+      const diff = now - d;
+      if (diff < 60000) return 'just now';
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+      if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+    } catch { return ''; }
+  },
+
+  _truncate(str, max) {
+    if (!str) return '';
+    const clean = str.replace(/\s+/g, ' ').trim();
+    if (clean.length <= max) return clean;
+    return clean.slice(0, max).replace(/\s\S*$/, '') + '…';
+  },
+
   _sourceIcon(type) {
     const icons = {
       paste: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-neutral-500"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>',
@@ -530,75 +552,6 @@ const KnowledgePage = {
       docx: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
     };
     return icons[type] || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-neutral-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>';
-  },
-
-  // Basic text extraction from PDF base64 (uses simple heuristic)
-  async _parsePdfBase64(base64) {
-    // For now, extract readable text from PDF binary
-    // A proper implementation would use pdf-parse in main process
-    // This is a fallback that extracts text between stream markers
-    try {
-      const binary = atob(base64);
-      const text = [];
-      let inText = false;
-      let current = '';
-
-      for (let i = 0; i < binary.length; i++) {
-        const char = binary[i];
-        if (char >= ' ' && char <= '~') {
-          current += char;
-        } else if (current.length > 20) {
-          text.push(current);
-          current = '';
-        } else {
-          current = '';
-        }
-      }
-      if (current.length > 20) text.push(current);
-
-      const result = text.join('\n').replace(/[^\x20-\x7E\n]/g, '');
-      if (result.length < 50) {
-        return '[PDF text extraction limited — for best results, copy and paste the text directly]';
-      }
-      return result;
-    } catch {
-      return '[Could not extract text from PDF]';
-    }
-  },
-
-  async _parseDocxBase64(base64) {
-    // Basic DOCX text extraction — DOCX is a zip with XML inside
-    // For a proper implementation, use mammoth in main process
-    try {
-      const binary = atob(base64);
-      // Look for text content in the XML
-      const text = [];
-      let current = '';
-      let inTag = false;
-
-      for (let i = 0; i < binary.length; i++) {
-        const char = binary[i];
-        if (char === '<') { inTag = true; continue; }
-        if (char === '>') { inTag = false; continue; }
-        if (!inTag && char >= ' ' && char <= '~') {
-          current += char;
-        } else if (!inTag && current.length > 5) {
-          text.push(current);
-          current = '';
-        } else if (!inTag) {
-          current = '';
-        }
-      }
-      if (current.length > 5) text.push(current);
-
-      const result = text.join(' ').replace(/\s+/g, ' ').trim();
-      if (result.length < 50) {
-        return '[DOCX text extraction limited — for best results, copy and paste the text directly]';
-      }
-      return result;
-    } catch {
-      return '[Could not extract text from DOCX]';
-    }
   },
 
   destroy() {

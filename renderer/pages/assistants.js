@@ -5,6 +5,9 @@ const AssistantsPage = {
   currentAssistant: null,
   currentConversation: null,
   _streamBuffer: '',
+  _searchQuery: '',
+  _page: 0,
+  _pageSize: 10,
 
   render(container) {
     container.innerHTML = '<div id="asstPage" class="flex flex-col flex-1 min-h-0"><div id="asstContent" class="flex-1 overflow-y-auto"></div></div>';
@@ -16,7 +19,22 @@ const AssistantsPage = {
     this.currentView = 'list';
     this.currentAssistant = null;
     const el = document.querySelector('#asstContent');
-    const assistants = await window.api.assistants.list();
+    const allAssistants = await window.api.assistants.list();
+
+    // Filter by search
+    const q = this._searchQuery.toLowerCase();
+    const filtered = q ? allAssistants.filter(a =>
+      (a.title || '').toLowerCase().includes(q) ||
+      (a.description || '').toLowerCase().includes(q) ||
+      (a.collection_name || '').toLowerCase().includes(q)
+    ) : allAssistants;
+
+    // Pagination
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / this._pageSize));
+    this._page = Math.min(this._page, totalPages - 1);
+    const start = this._page * this._pageSize;
+    const assistants = filtered.slice(start, start + this._pageSize);
 
     el.innerHTML = `
       <div class="p-6 space-y-4">
@@ -24,12 +42,16 @@ const AssistantsPage = {
           <h2 class="text-lg font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">AI Assistants</h2>
           <button id="asstNewBtn" class="px-4 py-2.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm">+ New Assistant</button>
         </div>
-        <p class="text-xs text-neutral-500">${assistants.length} assistant${assistants.length !== 1 ? 's' : ''}</p>
+        <p class="text-xs text-neutral-500">${allAssistants.length} assistant${allAssistants.length !== 1 ? 's' : ''}${q ? ` · ${filtered.length} match${filtered.length !== 1 ? 'es' : ''}` : ''}</p>
+
+        <input id="asstSearch" type="text" placeholder="Search assistants..." value="${this._escAttr(this._searchQuery)}"
+          class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm" />
+
         <div id="asstGrid" class="space-y-2">
           ${assistants.length === 0 ? `
             <div class="text-center py-12 text-neutral-400">
               <div class="p-3 bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-800 shadow-sm text-neutral-400 inline-flex mb-2"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-              <p class="text-sm">No assistants yet. Create one to get started.</p>
+              <p class="text-sm">${q ? 'No assistants match your search.' : 'No assistants yet. Create one to get started.'}</p>
             </div>
           ` : assistants.map(a => `
             <div class="asst-item bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/40 dark:border-neutral-700/40 rounded-2xl p-5 shadow-[0_2px_10px_rgb(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgb(0,0,0,0.2)] backdrop-blur-md hover:shadow-md cursor-pointer transition-all" data-id="${a.id}">
@@ -38,26 +60,50 @@ const AssistantsPage = {
                   <h3 class="text-sm font-medium text-neutral-900 dark:text-neutral-100">${this._esc(a.title)}</h3>
                   ${a.description ? `<p class="text-xs text-neutral-500 mt-0.5 truncate">${this._esc(a.description)}</p>` : ''}
                   <div class="flex gap-3 text-xs text-neutral-400 mt-1">
-                    ${a.collection_name ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> ${this._esc(a.collection_name)}</span>` : '<span class="text-neutral-300">No KB</span>'}
+                    ${a.collection_name ? `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="inline-block" style="vertical-align:-1px"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> ${this._esc(a.collection_name)}</span>` : '<span class="text-neutral-300 dark:text-neutral-600">No KB</span>'}
                     <span>${a.conversation_count || 0} chat${a.conversation_count !== 1 ? 's' : ''}</span>
                   </div>
                 </div>
-                <div class="flex gap-1 ml-2">
-                  <button class="asst-edit text-neutral-400 hover:text-neutral-600 text-xs px-2 py-1" data-id="${a.id}">Edit</button>
-                  <button class="asst-del text-neutral-300 hover:text-rose-600 text-base px-1" data-id="${a.id}">✕</button>
+                <div class="flex items-center gap-5 ml-4 shrink-0">
+                  <button class="asst-edit text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200" data-id="${a.id}" title="Edit">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="asst-del text-neutral-300 hover:text-rose-600" data-id="${a.id}" title="Delete">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
                 </div>
               </div>
             </div>
           `).join('')}
         </div>
+
+        <div class="flex items-center justify-center gap-2 pt-2">
+          <button id="asstPrevBtn" class="px-3 py-1.5 rounded-lg text-xs font-medium ${this._page === 0 ? 'text-neutral-300 dark:text-neutral-600 cursor-default' : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60'}">← Prev</button>
+          <span class="text-xs text-neutral-400">Page ${this._page + 1} of ${totalPages}</span>
+          <button id="asstNextBtn" class="px-3 py-1.5 rounded-lg text-xs font-medium ${this._page >= totalPages - 1 ? 'text-neutral-300 dark:text-neutral-600 cursor-default' : 'text-neutral-600 dark:text-neutral-400 hover:bg-white/60 dark:hover:bg-neutral-800/60'}">Next →</button>
+        </div>
       </div>
     `;
+
+    // Search handler
+    document.querySelector('#asstSearch')?.addEventListener('input', (e) => {
+      this._searchQuery = e.target.value;
+      this._page = 0;
+      this._showList();
+    });
+
+    document.querySelector('#asstPrevBtn')?.addEventListener('click', () => {
+      if (this._page > 0) { this._page--; this._showList(); }
+    });
+    document.querySelector('#asstNextBtn')?.addEventListener('click', () => {
+      if (this._page < totalPages - 1) { this._page++; this._showList(); }
+    });
 
     document.querySelector('#asstNewBtn')?.addEventListener('click', () => this._showEdit(null));
 
     document.querySelectorAll('.asst-item').forEach(item => {
       item.addEventListener('click', (e) => {
-        if (e.target.classList.contains('asst-edit') || e.target.classList.contains('asst-del')) return;
+        if (e.target.closest('.asst-edit') || e.target.closest('.asst-del')) return;
         this._showChat(item.dataset.id);
       });
     });

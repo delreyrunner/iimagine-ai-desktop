@@ -4,12 +4,14 @@
 const ChatPage = {
   conversations: [],
   activeConversationId: null,
+  activeCollectionId: null,
   chatHistory: [],
   isStreaming: false,
   activeAssistantEl: null,
   activeAssistantContent: '',
   activeTypingEl: null,
   _listenersRegistered: false,
+  _collections: [],
 
   async render(container) {
     container.innerHTML = `
@@ -17,8 +19,9 @@ const ChatPage = {
         <!-- Conversation list -->
         <div id="convSidebar" class="w-48 border-r border-neutral-200/40 dark:border-neutral-700/40 flex flex-col flex-shrink-0 bg-white/20 dark:bg-neutral-800/20">
           <div class="p-2 border-b border-neutral-200/40 dark:border-neutral-700/40">
-            <button id="newConvBtn" class="w-full px-4 py-2 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm flex items-center justify-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg> New chat
+            <button id="newConvBtn" class="w-full px-3 py-1.5 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-xs font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all shadow-sm flex items-center justify-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+              New chat
             </button>
           </div>
           <div id="convList" class="flex-1 overflow-y-auto p-1 space-y-0.5"></div>
@@ -38,6 +41,14 @@ const ChatPage = {
             </div>
           </div>
           <div class="border-t border-neutral-200/40 dark:border-neutral-700/40 p-3 flex-shrink-0 bg-white/30 dark:bg-neutral-800/30">
+            <div id="kbSelectorRow" class="flex items-center gap-2 mb-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-neutral-400 shrink-0"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+              <select id="kbSelect"
+                class="flex-1 bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-lg px-2.5 py-1.5 text-xs text-neutral-600 dark:text-neutral-400 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm appearance-none cursor-pointer">
+                <option value="">No knowledge base</option>
+              </select>
+              <span id="kbBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800 whitespace-nowrap">KB active</span>
+            </div>
             <div class="flex gap-2">
               <textarea id="chatInput" placeholder="Message your local AI..." rows="3"
                 class="flex-1 resize-none bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-xl px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 placeholder-neutral-400 dark:placeholder-neutral-500 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm"></textarea>
@@ -64,8 +75,10 @@ const ChatPage = {
     const noProviderMsg = container.querySelector('#noProviderMsg');
     const goToSettings = container.querySelector('#goToSettings');
     const chatUserName = container.querySelector('#chatUserName');
-    const newConvBtn = container.querySelector('#newConvBtn');
     const convList = container.querySelector('#convList');
+    const kbSelect = container.querySelector('#kbSelect');
+    const kbBadge = container.querySelector('#kbBadge');
+    const newConvBtn = container.querySelector('#newConvBtn');
 
     if (window.AppState?.currentUser) {
       chatUserName.textContent = window.AppState.currentUser.email || '';
@@ -81,6 +94,23 @@ const ChatPage = {
     }
 
     goToSettings?.addEventListener('click', () => window.AppRouter?.navigate('settings'));
+
+    // Load KB collections into selector
+    await this._loadKBCollections(kbSelect, kbBadge);
+
+    // KB selector change handler
+    kbSelect.addEventListener('change', async () => {
+      this.activeCollectionId = kbSelect.value || null;
+      kbBadge.classList.toggle('hidden', !this.activeCollectionId);
+      // Persist collection choice on the active conversation
+      if (this.activeConversationId) {
+        await window.api.storage.updateConversationCollection(this.activeConversationId, this.activeCollectionId);
+      }
+      // Update placeholder text
+      chatInput.placeholder = this.activeCollectionId
+        ? 'Ask about your knowledge base...'
+        : 'Message your local AI...';
+    });
 
     // Load conversations
     await this._loadConversations(convList, messages, welcomeMessage);
@@ -157,6 +187,21 @@ const ChatPage = {
       window.api.gateway.onStreamDone(async () => {
         this._onStreamComplete();
       });
+
+      // Chat RAG stream (KB-augmented chat)
+      window.api.chatRag.onChunk((chunk) => {
+        if (this.activeTypingEl?.parentNode) this.activeTypingEl.remove();
+        if (chunk.content && this.activeAssistantEl) {
+          this.activeAssistantContent += chunk.content;
+          this.activeAssistantEl.querySelector('.msg-content').textContent = this.activeAssistantContent;
+          const msgs = document.querySelector('#messages');
+          if (msgs) msgs.scrollTop = msgs.scrollHeight;
+        }
+      });
+
+      window.api.chatRag.onDone(async () => {
+        this._onStreamComplete();
+      });
     }
 
     chatInput.focus();
@@ -176,34 +221,73 @@ const ChatPage = {
   _renderConvList(convList, messagesEl, welcomeMessage) {
     convList.innerHTML = '';
     for (const conv of this.conversations) {
-      const btn = document.createElement('button');
-      btn.className = `conv-item w-full text-left px-2 py-1.5 rounded-lg text-xs truncate transition-all ${
-        conv.id === this.activeConversationId ? 'font-medium text-neutral-900 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
-      }`;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'conv-item group relative flex items-center rounded-lg transition-all';
+      wrapper.dataset.convId = conv.id;
       if (conv.id === this.activeConversationId) {
         const isDark = document.documentElement.classList.contains('dark');
-        btn.style.background = isDark ? 'rgba(38,38,38,0.75)' : 'rgba(255,255,255,0.75)';
-      } else {
-        btn.style.background = 'transparent';
+        wrapper.style.background = isDark ? 'rgba(38,38,38,0.75)' : 'rgba(255,255,255,0.95)';
       }
-      btn.textContent = conv.title || 'New conversation';
-      btn.dataset.convId = conv.id;
+
+      const btn = document.createElement('button');
+      btn.className = `flex-1 text-left px-2 py-1.5 text-xs truncate ${
+        conv.id === this.activeConversationId ? 'font-medium text-neutral-900 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+      }`;
+      const kbIcon = conv.collection_id ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-0.5 text-emerald-500 shrink-0" style="vertical-align: -1px;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>' : '';
+      btn.innerHTML = `${kbIcon}${this._escHtml(conv.title || 'New conversation')}`;
       btn.addEventListener('click', async () => {
         await this._selectConversation(conv.id, messagesEl, welcomeMessage);
         this._highlightConv(convList);
       });
-      convList.appendChild(btn);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'hidden group-hover:flex items-center justify-center w-5 h-5 mr-1 rounded text-neutral-300 hover:text-rose-500 dark:text-neutral-600 dark:hover:text-rose-400 transition-colors shrink-0';
+      delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+      delBtn.title = 'Delete conversation';
+      delBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await window.api.storage.deleteConversation(conv.id);
+        // If we deleted the active conversation, clear it
+        if (this.activeConversationId === conv.id) {
+          this.activeConversationId = null;
+          this.chatHistory = [];
+          messagesEl.innerHTML = '';
+          messagesEl.appendChild(welcomeMessage);
+          welcomeMessage.classList.remove('hidden');
+        }
+        // Refresh list
+        this.conversations = await window.api.storage.getConversations(50);
+        this._renderConvList(convList, messagesEl, welcomeMessage);
+        // Select first remaining conversation if we deleted the active one
+        if (!this.activeConversationId && this.conversations.length > 0) {
+          await this._selectConversation(this.conversations[0].id, messagesEl, welcomeMessage);
+        }
+        this._highlightConv(convList);
+      });
+
+      wrapper.appendChild(btn);
+      wrapper.appendChild(delBtn);
+      convList.appendChild(wrapper);
     }
+  },
+
+  _escHtml(str) {
+    const div = document.createElement('span');
+    div.textContent = str;
+    return div.innerHTML;
   },
 
   _highlightConv(convList) {
     convList.querySelectorAll('.conv-item').forEach(el => {
       const isActive = el.dataset.convId === this.activeConversationId;
-      el.className = `conv-item w-full text-left px-2 py-1.5 rounded-lg text-xs truncate transition-all ${
-        isActive ? 'font-medium text-neutral-900 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
-      }`;
+      const textBtn = el.querySelector('button');
+      if (textBtn) {
+        textBtn.className = `flex-1 text-left px-2 py-1.5 text-xs truncate ${
+          isActive ? 'font-medium text-neutral-900 dark:text-neutral-100' : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+        }`;
+      }
       const isDarkHL = document.documentElement.classList.contains('dark');
-      el.style.background = isActive ? (isDarkHL ? 'rgba(38,38,38,0.75)' : 'rgba(255,255,255,0.75)') : 'transparent';
+      el.style.background = isActive ? (isDarkHL ? 'rgba(38,38,38,0.75)' : 'rgba(255,255,255,0.95)') : 'transparent';
     });
   },
 
@@ -211,6 +295,22 @@ const ChatPage = {
     this.activeConversationId = id;
     const dbMessages = await window.api.storage.getMessages(id, 200);
     this.chatHistory = dbMessages.map(m => ({ role: m.role, content: m.content }));
+
+    // Restore KB collection selection for this conversation
+    const conv = await window.api.storage.getConversation(id);
+    this.activeCollectionId = conv?.collection_id || null;
+    const kbSelect = document.querySelector('#kbSelect');
+    const kbBadge = document.querySelector('#kbBadge');
+    if (kbSelect) {
+      kbSelect.value = this.activeCollectionId || '';
+      if (kbBadge) kbBadge.classList.toggle('hidden', !this.activeCollectionId);
+    }
+    const chatInput = document.querySelector('#chatInput');
+    if (chatInput) {
+      chatInput.placeholder = this.activeCollectionId
+        ? 'Ask about your knowledge base...'
+        : 'Message your local AI...';
+    }
 
     // Clear and re-render messages
     messagesEl.innerHTML = '';
@@ -232,6 +332,7 @@ const ChatPage = {
       title: 'New conversation',
       model: window.ProviderManager.activeProvider?.name || null,
       providerType: window.ProviderManager.activeProvider?.type || 'local',
+      collectionId: this.activeCollectionId || null,
     });
     this.activeConversationId = id;
     this.chatHistory = [];
@@ -291,6 +392,30 @@ const ChatPage = {
     this.activeAssistantContent = '';
     this.activeAssistantEl = this._createAssistantBubble(messages);
 
+    // If a KB collection is selected, use RAG chat
+    if (this.activeCollectionId) {
+      const result = await window.api.chatRag.send({
+        conversationId: this.activeConversationId,
+        userMessage: text,
+        collectionId: this.activeCollectionId,
+        chatHistory: this.chatHistory,
+      });
+
+      if (!result.success) {
+        if (this.activeTypingEl?.parentNode) this.activeTypingEl.remove();
+        this.activeAssistantEl.querySelector('.msg-content').textContent =
+          `Error: ${result.error}`;
+        this.activeAssistantEl.querySelector('.msg-content').classList.add('text-red-500');
+        this.isStreaming = false;
+        sendBtn.disabled = false;
+        this.activeAssistantEl = null;
+        this.activeAssistantContent = '';
+        this.activeTypingEl = null;
+      }
+      return;
+    }
+
+    // Standard chat (no KB)
     const result = await pm.activeProvider.chat(this.chatHistory);
 
     if (!result.success) {
@@ -357,6 +482,26 @@ const ChatPage = {
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
     return div;
+  },
+
+  async _loadKBCollections(selectEl, badgeEl) {
+    try {
+      this._collections = await window.api.kb.getCollections();
+      selectEl.innerHTML = '<option value="">No knowledge base</option>';
+      for (const c of this._collections) {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.doc_count} doc${c.doc_count !== 1 ? 's' : ''})`;
+        selectEl.appendChild(opt);
+      }
+      // Restore selection if conversation has one
+      if (this.activeCollectionId) {
+        selectEl.value = this.activeCollectionId;
+        badgeEl.classList.toggle('hidden', !this.activeCollectionId);
+      }
+    } catch (err) {
+      console.warn('[Chat] Failed to load KB collections:', err.message);
+    }
   },
 
   async _onStreamComplete() {

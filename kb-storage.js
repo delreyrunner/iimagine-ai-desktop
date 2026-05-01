@@ -42,6 +42,7 @@ function createKBTables() {
       id TEXT PRIMARY KEY,
       collection_id TEXT NOT NULL,
       title TEXT NOT NULL,
+      description TEXT DEFAULT '',
       source_type TEXT NOT NULL DEFAULT 'paste',
       original_filename TEXT,
       content TEXT NOT NULL,
@@ -74,6 +75,13 @@ function createKBTables() {
     CREATE INDEX IF NOT EXISTS idx_kb_chunks_collection
       ON kb_chunks(collection_id);
   `);
+
+  // Migration: add description column to existing kb_documents tables
+  try {
+    db.prepare("SELECT description FROM kb_documents LIMIT 1").get();
+  } catch {
+    try { db.exec("ALTER TABLE kb_documents ADD COLUMN description TEXT DEFAULT ''"); } catch {}
+  }
 
   // Create vec virtual table if extension loaded
   if (vecLoaded) {
@@ -153,12 +161,12 @@ function deleteCollection(id) {
 
 // ── Documents CRUD ──────────────────────────────────────────────
 
-function addDocument({ id, collectionId, title, sourceType, originalFilename, content }) {
+function addDocument({ id, collectionId, title, sourceType, originalFilename, content, description }) {
   const charCount = content.length;
   db.prepare(`
-    INSERT INTO kb_documents (id, collection_id, title, source_type, original_filename, content, char_count)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(id, collectionId, title, sourceType || 'paste', originalFilename || null, content, charCount);
+    INSERT INTO kb_documents (id, collection_id, title, description, source_type, original_filename, content, char_count)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, collectionId, title, description || '', sourceType || 'paste', originalFilename || null, content, charCount);
 
   // Auto-chunk
   const chunks = chunkText(content, id, collectionId);
@@ -181,7 +189,7 @@ function addDocument({ id, collectionId, title, sourceType, originalFilename, co
 
 function getDocuments(collectionId) {
   return db.prepare(`
-    SELECT id, collection_id, title, source_type, original_filename, char_count, chunk_count, embedded, created_at, updated_at
+    SELECT id, collection_id, title, description, source_type, original_filename, char_count, chunk_count, embedded, created_at, updated_at
     FROM kb_documents WHERE collection_id = ? ORDER BY created_at DESC
   `).all(collectionId);
 }

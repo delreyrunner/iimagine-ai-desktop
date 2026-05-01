@@ -134,7 +134,7 @@
 
       <!-- Sidebar -->
       <aside id="sidebar" class="hidden md:flex flex-col w-56 border-r border-neutral-200/40 dark:border-neutral-700/40 bg-white/20 dark:bg-neutral-900/30 flex-shrink-0">
-        <!-- Logo -->
+        <!-- Logo + drag area -->
         <div class="h-14 flex items-center px-6 titlebar-drag">
           <span class="text-sm font-semibold tracking-tighter text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
             <div class="w-5 h-5 rounded-md bg-gradient-to-br from-neutral-800 to-neutral-950 flex items-center justify-center">
@@ -144,8 +144,8 @@
           </span>
         </div>
 
-        <!-- Model Dropdown (custom) -->
-        <div class="px-4 pb-3">
+        <!-- Model Dropdown + New Chat -->
+        <div class="px-4 pb-3 space-y-2">
           <div id="modelDropdown" class="relative">
             <button id="modelDropdownBtn" class="w-full bg-white/60 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-700/50 rounded-lg px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 focus:bg-white/90 dark:focus:bg-neutral-800/90 focus:outline-none transition-all shadow-sm flex items-center gap-2 text-left">
               <span class="text-neutral-400">No models</span>
@@ -157,7 +157,6 @@
 
         <!-- Nav -->
         <nav class="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
-          <p class="px-3 text-[10px] font-medium text-neutral-400 mb-3 uppercase tracking-widest">Menu</p>
 
           <button data-page="chat" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-white/40 dark:hover:bg-neutral-800/40 transition-all group">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>
@@ -179,13 +178,6 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <span class="text-sm font-medium">Assistants</span>
           </button>
-
-          <p class="px-3 text-[10px] font-medium text-neutral-400 mt-6 mb-3 uppercase tracking-widest">Settings</p>
-
-          <button data-page="settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-white/40 dark:hover:bg-neutral-800/40 transition-all group">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-            <span class="text-sm font-medium">Settings</span>
-          </button>
         </nav>
 
         <!-- User -->
@@ -194,6 +186,11 @@
           <button id="themeToggleBtn" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-white/40 dark:hover:bg-neutral-800/40 transition-all mb-1">
             <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             <span id="themeLabel" class="text-xs font-medium">Dark mode</span>
+          </button>
+          <!-- Settings -->
+          <button data-page="settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-white/40 dark:hover:bg-neutral-800/40 transition-all mb-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            <span class="text-xs font-medium">Settings</span>
           </button>
           <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/40 dark:hover:bg-neutral-800/40 transition-all">
             <div class="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-neutral-500 dark:text-neutral-400 text-xs font-medium flex-shrink-0">
@@ -208,8 +205,11 @@
       </aside>
 
       <!-- Main Content -->
-      <main id="mainContent" class="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+      <main class="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+        <!-- Draggable header bar across full width -->
+        <div class="h-14 titlebar-drag flex-shrink-0"></div>
         <!-- Pages rendered here by router -->
+        <div id="mainContent" class="flex-1 flex flex-col overflow-hidden min-w-0"></div>
       </main>
     </div>
   </div>

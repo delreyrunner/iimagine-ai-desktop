@@ -99,22 +99,29 @@ function createTables() {
     CREATE INDEX IF NOT EXISTS idx_media_type
       ON media(type, created_at DESC);
   `);
+
+  // Migration: add collection_id to conversations for KB chat
+  try {
+    db.prepare("SELECT collection_id FROM conversations LIMIT 1").get();
+  } catch {
+    try { db.exec("ALTER TABLE conversations ADD COLUMN collection_id TEXT DEFAULT NULL"); } catch {}
+  }
 }
 
 // ── Conversations ───────────────────────────────────────────────
 
-function createConversation({ id, title, model, providerType }) {
+function createConversation({ id, title, model, providerType, collectionId }) {
   const stmt = db.prepare(`
-    INSERT INTO conversations (id, title, model, provider_type)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO conversations (id, title, model, provider_type, collection_id)
+    VALUES (?, ?, ?, ?, ?)
   `);
-  stmt.run(id, title || 'New conversation', model || null, providerType || 'local');
-  return { id, title, model, providerType };
+  stmt.run(id, title || 'New conversation', model || null, providerType || 'local', collectionId || null);
+  return { id, title, model, providerType, collectionId };
 }
 
 function getConversations(limit = 50) {
   const stmt = db.prepare(`
-    SELECT id, title, model, provider_type, created_at, updated_at
+    SELECT id, title, model, provider_type, collection_id, created_at, updated_at
     FROM conversations
     ORDER BY updated_at DESC
     LIMIT ?
@@ -124,7 +131,7 @@ function getConversations(limit = 50) {
 
 function getConversation(id) {
   const stmt = db.prepare(`
-    SELECT id, title, model, provider_type, created_at, updated_at
+    SELECT id, title, model, provider_type, collection_id, created_at, updated_at
     FROM conversations WHERE id = ?
   `);
   return stmt.get(id) || null;
@@ -136,6 +143,14 @@ function updateConversationTitle(id, title) {
     WHERE id = ?
   `);
   return stmt.run(title, id);
+}
+
+function updateConversationCollection(id, collectionId) {
+  const stmt = db.prepare(`
+    UPDATE conversations SET collection_id = ?, updated_at = datetime('now')
+    WHERE id = ?
+  `);
+  return stmt.run(collectionId || null, id);
 }
 
 function deleteConversation(id) {
@@ -325,6 +340,7 @@ module.exports = {
   getConversations,
   getConversation,
   updateConversationTitle,
+  updateConversationCollection,
   deleteConversation,
   // Messages
   addMessage,
