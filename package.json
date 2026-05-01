@@ -43,7 +43,14 @@
       "plugin-manager.js",
       "renderer/**/*",
       "plugins/**/*",
-      "assets/**/*"
+      "assets/**/*",
+      "node_modules/**/*"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**",
+      "node_modules/sqlite-vec/**",
+      "node_modules/keytar/**"
     ],
     "protocols": [
       {
